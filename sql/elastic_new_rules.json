@@ -1,0 +1,10 @@
+{ "index": { "_id": 1 } }
+{ "id": 1, "topic": "Career Growth", "rule_query": { "span_near": { "clauses": [ { "span_term": { "comment_text": "career" } }, { "span_term": { "comment_text": "growth" } } ], "slop": 5, "in_order": false } } }
+{ "index": { "_id": 2 } }
+{ "id": 2, "topic": "Internal Mobility", "rule_query": { "span_near": { "clauses": [ { "span_term": { "comment_text": "internal" } }, { "span_term": { "comment_text": "transfer" } } ], "slop": 4, "in_order": false } } }
+{ "index": { "_id": 3 } }
+{ "id": 3, "topic": "Client Satisfaction", "rule_query": { "span_near": { "clauses": [ { "span_term": { "comment_text": "client" } }, { "span_term": { "comment_text": "support" } } ], "slop": 5, "in_order": false } } }
+{ "index": { "_id": 4 } }
+{ "id": 4, "topic": "Learning and Growth", "rule_query": { "span_near": { "clauses": [ { "span_term": { "comment_text": "learning" } }, { "span_term": { "comment_text": "growth" } } ], "slop": 3, "in_order": false } } }
+{ "index": { "_id": 5 } }
+{ "id": 5, "topic": "Team Collaboration", "rule_query": { "span_near": { "clauses": [ { "span_term": { "comment_text": "team" } }, { "span_term": { "comment_text": "collaboration" } } ], "slop": 4, "in_order": false } } }

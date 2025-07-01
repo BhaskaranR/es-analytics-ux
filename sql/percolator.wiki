@@ -1,0 +1,172 @@
+h1. Elastic Search Comment Analysis System
+
+h2. Overview
+This system uses Elastic search's percolator and synonym features to analyze and categorize comments based on predefined rules and word groups. It's particularly useful for analyzing employee feedback, customer comments, or any text-based feedback system.
+
+h2. Architecture
+
+h3. 1. Synonym Groups
+The system uses Elastic search's synonym feature to create word groups that help in matching similar terms. These are defined in the {code}word_groups{code} synonym set:
+
+* {code}hr_client{code}: client, customer, user, end user
+* {code}hr_internal-move{code}: internal, transfer, from_within, lateral, IJP
+* {code}hr_career{code}: career, promotion, growth, development
+* {code}hr_onboarding{code}: onboarding, orientation, induction
+* {code}hr_team{code}: team, collaboration, cooperation, group
+* {code}hr_support{code}: support, assistance, help, aid
+
+h3. 2. Index Structure
+The system uses two main indices:
+
+# *comment_rules*: A percolator index that stores the matching rules
+** Uses custom analyzers for indexing and searching
+** Includes synonym support for flexible matching
+** Stores rules with topics and interval queries
+
+# *matched_comments*: Stores the matched comments with their corresponding rules and topics
+
+h3. 3. Rule Structure
+Each rule consists of:
+* A unique ID
+* A topic category
+* An interval query that defines the matching conditions
+* Parameters like max_gaps and ordered matching
+
+h2. How It Works
+
+h3. 1. Rule Creation
+Rules are created using interval queries that can match:
+* Exact phrases
+* Words in any order
+* Words within a specified distance (max_gaps)
+* Synonyms of predefined word groups
+
+Example rule:
+{code:json}
+{
+  "topic": "Client Support",
+  "query": {
+    "intervals": {
+      "comment_text": {
+        "all_of": {
+          "ordered": false,
+          "intervals": [
+            {"match": {"query": "hr_client", "analyzer": "search_analyzer", "max_gaps": 5}},
+            {"match": {"query": "hr_support", "analyzer": "search_analyzer", "max_gaps": 5}}
+          ]
+        }
+      }
+    }
+  }
+}
+{code}
+
+h3. 2. Comment Processing
+When a new comment arrives:
+
+# The comment is sent to the percolator search endpoint
+# Elastic search matches the comment against all stored rules
+# Matching rules are returned with their scores
+# The comment and its matches are stored in the matched_comments index
+
+h3. 3. Matching Process
+The system uses several matching techniques:
+
+# *Synonym Matching*: Words are matched against their synonym groups
+# *Interval Queries*: Matches words within specified distances
+# *Ordered/Unordered Matching*: Can match words in any order or specific order
+# *Scoring*: Each match gets a relevance score
+
+h3. 4. Topics Covered
+The system can identify various topics including:
+* Client Support
+* Career Concerns
+* Learning and Growth
+* Team Collaboration
+* Onboarding Process
+* Internal Movement
+* Employee Training
+* And more...
+
+h2. Usage
+
+h3. 1. Setting Up Rules
+{code:bash}
+# Create a new rule
+POST /comment_rules/_doc
+{
+  "topic": "Topic Name",
+  "query": {
+    "intervals": {
+      "comment_text": {
+        "all_of": {
+          "ordered": false,
+          "intervals": [
+            {"match": {"query": "word1", "analyzer": "search_analyzer", "max_gaps": 5}},
+            {"match": {"query": "word2", "analyzer": "search_analyzer", "max_gaps": 5}}
+          ]
+        }
+      }
+    }
+  }
+}
+{code}
+
+h3. 2. Matching Comments
+{code:bash}
+# Match a comment against rules
+POST /comment_rules/_search
+{
+  "query": {
+    "percolate": {
+      "field": "query",
+      "document": {
+        "comment_text": "Your comment text here"
+      }
+    }
+  }
+}
+{code}
+
+h3. 3. Storing Matches
+{code:bash}
+# Store matched comment
+POST /matched_comments/_doc
+{
+  "comment_text": "Original comment",
+  "matched_rules": [
+    {
+      "rule_id": "1",
+      "topic": "Topic Name",
+      "score": 0.8,
+      "matched_terms": ["term1", "term2"],
+      "max_gaps": 5,
+      "ordered": false
+    }
+  ],
+  "timestamp": "2024-03-20T10:00:00Z",
+  "total_matches": 1
+}
+{code}
+
+h2. Benefits
+
+# *Flexible Matching*: Can match variations of words through synonyms
+# *Contextual Understanding*: Considers word proximity and order
+# *Scalable*: Can handle large volumes of comments
+# *Maintainable*: Easy to add new rules and word groups
+# *Accurate*: Uses sophisticated matching algorithms
+
+h2. Requirements
+
+* Elastic search 8.8 or higher
+* X-Pack with synonyms enabled
+* Proper configuration for synonym updates
+
+h2. Best Practices
+
+# Regularly review and update synonym groups
+# Monitor rule performance and adjust max_gaps as needed
+# Keep rules focused and specific
+# Use appropriate analyzers for your use case
+# Regularly clean up old matched comments if needed 
