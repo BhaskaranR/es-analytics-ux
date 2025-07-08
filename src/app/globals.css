@@ -196,4 +196,8 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  mark {
+    @apply bg-yellow-200 dark:bg-yellow-800;
+  }
 }

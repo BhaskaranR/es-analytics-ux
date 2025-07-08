@@ -9,9 +9,19 @@ POST /comment_rules/_search
     "percolate": {
       "field": "rule_query",
       "document": {
-        "comment_text": "I received excellent support from the customer service team."
+        "comment_text": "I want more career opportunities for growth and advancement."
       }
     }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "type": "unified"
+      }
+    }
+  }
 }
 ```
 
@@ -887,4 +897,274 @@ POST /matched_comments/_doc
   "max_gaps": 4,
   "ordered": false,
   "timestamp": "2024-03-20T10:09:00Z"
+}
+
+# Career Development Rules Matches
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_1",
+  "comment_text": "I want more career opportunities for growth and advancement.",
+  "topic": "Career Growth Opportunities",
+  "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_career", "bacghr_opportunity"],
+  "max_gaps": 5,
+  "ordered": false,
+  "highlighted_text": "I want more <mark>career</mark> <mark>opportunities</mark> for growth and advancement.",
+  "timestamp": "2024-03-20T10:10:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_2",
+  "comment_text": "Learning is important for my career development and growth.",
+  "topic": "Learning and Development",
+  "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_learning", "bacghr_career"],
+  "max_gaps": 3,
+  "ordered": false,
+  "highlighted_text": "<mark>Learning</mark> is important for my <mark>career</mark> development and growth.",
+  "timestamp": "2024-03-20T10:11:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_3",
+  "comment_text": "I want promotion and advancement opportunities in my role.",
+  "topic": "Promotion and Advancement",
+  "description": "promotion NEAR bacghr_advancement WITHIN 4 WORDS",
+  "score": 0.8,
+  "matched_terms": ["promotion", "bacghr_advancement"],
+  "max_gaps": 4,
+  "ordered": false,
+  "highlighted_text": "I want <mark>promotion</mark> and <mark>advancement</mark> opportunities in my role.",
+  "timestamp": "2024-03-20T10:12:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_4",
+  "comment_text": "I need a clear career path to understand my future direction.",
+  "topic": "Career Path Clarity",
+  "description": "\"career path\" NEAR clear WITHIN 5 WORDS",
+  "score": 0.8,
+  "matched_terms": ["career path", "clear"],
+  "max_gaps": 5,
+  "ordered": false,
+  "highlighted_text": "I need a <mark>clear</mark> <mark>career path</mark> to understand my future direction.",
+  "timestamp": "2024-03-20T10:13:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_5",
+  "comment_text": "I need mentorship for my career development and guidance.",
+  "topic": "Mentorship and Guidance",
+  "description": "bacghr_mentorship NEAR bacghr_career WITHIN 4 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_mentorship", "bacghr_career"],
+  "max_gaps": 4,
+  "ordered": false,
+  "highlighted_text": "I need <mark>mentorship</mark> for my <mark>career</mark> development and guidance.",
+  "timestamp": "2024-03-20T10:14:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_6",
+  "comment_text": "I want skill development opportunities to grow professionally.",
+  "topic": "Skill Development",
+  "description": "skill NEAR development WITHIN 3 WORDS",
+  "score": 0.8,
+  "matched_terms": ["skill", "development"],
+  "max_gaps": 3,
+  "ordered": false,
+  "highlighted_text": "I want <mark>skill</mark> <mark>development</mark> opportunities to grow professionally.",
+  "timestamp": "2024-03-20T10:15:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_7",
+  "comment_text": "There is a lack of career opportunities in this organization.",
+  "topic": "Career Progression Concerns",
+  "description": "lack NEAR bacghr_career WITHIN 3 WORDS",
+  "score": 0.8,
+  "matched_terms": ["lack", "bacghr_career"],
+  "max_gaps": 3,
+  "ordered": false,
+  "highlighted_text": "There is a <mark>lack</mark> of <mark>career</mark> opportunities in this organization.",
+  "timestamp": "2024-03-20T10:16:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_8",
+  "comment_text": "I need training opportunity for growth and development.",
+  "topic": "Training and Education",
+  "description": "training NEAR bacghr_opportunity WITHIN 4 WORDS",
+  "score": 0.8,
+  "matched_terms": ["training", "bacghr_opportunity"],
+  "max_gaps": 4,
+  "ordered": false,
+  "highlighted_text": "I need <mark>training</mark> <mark>opportunity</mark> for growth and development.",
+  "timestamp": "2024-03-20T10:17:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_9",
+  "comment_text": "My career goal is to advance to a leadership position.",
+  "topic": "Career Goals and Aspirations",
+  "description": "goal NEAR bacghr_career WITHIN 4 WORDS",
+  "score": 0.8,
+  "matched_terms": ["goal", "bacghr_career"],
+  "max_gaps": 4,
+  "ordered": false,
+  "highlighted_text": "My <mark>career</mark> <mark>goal</mark> is to advance to a leadership position.",
+  "timestamp": "2024-03-20T10:18:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_10",
+  "comment_text": "I want professional growth and development opportunities.",
+  "topic": "Professional Growth",
+  "description": "professional NEAR growth WITHIN 3 WORDS",
+  "score": 0.8,
+  "matched_terms": ["professional", "growth"],
+  "max_gaps": 3,
+  "ordered": false,
+  "highlighted_text": "I want <mark>professional</mark> <mark>growth</mark> and development opportunities.",
+  "timestamp": "2024-03-20T10:19:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_11",
+  "comment_text": "I need career development support to advance in my role.",
+  "topic": "Career Development Support",
+  "description": "bacghr_career NEAR support WITHIN 5 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_career", "support"],
+  "max_gaps": 5,
+  "ordered": false,
+  "highlighted_text": "I need <mark>career</mark> development <mark>support</mark> to advance in my role.",
+  "timestamp": "2024-03-20T10:20:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_12",
+  "comment_text": "I want advancement opportunity for career growth.",
+  "topic": "Advancement Opportunities",
+  "description": "bacghr_advancement NEAR bacghr_opportunity WITHIN 4 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_advancement", "bacghr_opportunity"],
+  "max_gaps": 4,
+  "ordered": false,
+  "highlighted_text": "I want <mark>advancement</mark> <mark>opportunity</mark> for career growth.",
+  "timestamp": "2024-03-20T10:21:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_13",
+  "comment_text": "I need a career plan for the future development.",
+  "topic": "Career Planning",
+  "description": "\"career plan\" NEAR future WITHIN 5 WORDS",
+  "score": 0.8,
+  "matched_terms": ["career plan", "future"],
+  "max_gaps": 5,
+  "ordered": false,
+  "highlighted_text": "I need a <mark>career plan</mark> for the <mark>future</mark> development.",
+  "timestamp": "2024-03-20T10:22:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_14",
+  "comment_text": "I want learning opportunity for professional development.",
+  "topic": "Learning Opportunities",
+  "description": "bacghr_learning NEAR bacghr_opportunity WITHIN 4 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_learning", "bacghr_opportunity"],
+  "max_gaps": 4,
+  "ordered": false,
+  "highlighted_text": "I want <mark>learning</mark> <mark>opportunity</mark> for professional development.",
+  "timestamp": "2024-03-20T10:23:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_15",
+  "comment_text": "I need career development feedback to improve my skills.",
+  "topic": "Career Development Feedback",
+  "description": "bacghr_career NEAR feedback WITHIN 5 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_career", "feedback"],
+  "max_gaps": 5,
+  "ordered": false,
+  "highlighted_text": "I need <mark>career</mark> development <mark>feedback</mark> to improve my skills.",
+  "timestamp": "2024-03-20T10:24:00Z"
+}
+
+# Multiple Rule Matches - Same Comment Matching Multiple Rules
+
+POST /matched_comments/_doc
+{
+  "rule_id": "1",
+  "comment_text": "Client support and career development are both important to me.",
+  "topic": "Client Support",
+  "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_client", "bacghr_support"],
+  "max_gaps": 5,
+  "ordered": false,
+  "highlighted_text": "<mark>Client</mark> <mark>support</mark> and career development are both important to me.",
+  "timestamp": "2024-03-20T10:25:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_11",
+  "comment_text": "Client support and career development are both important to me.",
+  "topic": "Career Development Support",
+  "description": "bacghr_career NEAR support WITHIN 5 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_career", "support"],
+  "max_gaps": 5,
+  "ordered": false,
+  "highlighted_text": "Client <mark>support</mark> and <mark>career</mark> development are both important to me.",
+  "timestamp": "2024-03-20T10:25:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "5",
+  "comment_text": "Team collaboration helps with career growth and development.",
+  "topic": "Team Collaboration",
+  "description": "team NEAR collaboration WITHIN 4 WORDS",
+  "score": 0.8,
+  "matched_terms": ["team", "collaboration"],
+  "max_gaps": 4,
+  "ordered": false,
+  "highlighted_text": "<mark>Team</mark> <mark>collaboration</mark> helps with career growth and development.",
+  "timestamp": "2024-03-20T10:26:00Z"
+}
+
+POST /matched_comments/_doc
+{
+  "rule_id": "cd_1",
+  "comment_text": "Team collaboration helps with career growth and development.",
+  "topic": "Career Growth Opportunities",
+  "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
+  "score": 0.8,
+  "matched_terms": ["bacghr_career", "bacghr_opportunity"],
+  "max_gaps": 5,
+  "ordered": false,
+  "highlighted_text": "Team collaboration helps with <mark>career</mark> <mark>growth</mark> and development.",
+  "timestamp": "2024-03-20T10:26:00Z"
 }

@@ -1,4 +1,4 @@
-import TextAnalyticsPage from './(delete-this-and-modify-page.tsx)/TextAnalyticsPage';
+import TextAnalyticsPage from './components/TextAnalyticsPage';
 
 /**
  * The main page component that renders the HomePage component.
