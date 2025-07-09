@@ -11,6 +11,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
         "comment_text": "The client support team was very responsive and helped resolve my issue quickly"
       }
     }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
   }
 }'
 
@@ -21,6 +31,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
       "field": "query",
       "document": {
         "comment_text": "There is a lack of career development opportunities in my current role"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
       }
     }
   }
@@ -35,6 +55,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
         "comment_text": "The client support team was very helpful"
       }
     }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
   }
 }'
 
@@ -45,6 +75,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
       "field": "query",
       "document": {
         "comment_text": "The learning and growth opportunities here are excellent"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
       }
     }
   }
@@ -59,6 +99,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
         "comment_text": "Our team collaboration has improved significantly over the past quarter"
       }
     }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
   }
 }'
 
@@ -69,6 +119,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
       "field": "query",
       "document": {
         "comment_text": "I am interested in career advancement and promotion opportunities"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
       }
     }
   }
@@ -83,6 +143,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
         "comment_text": "The customer support team provided excellent assistance"
       }
     }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
   }
 }'
 
@@ -93,6 +163,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
       "field": "query",
       "document": {
         "comment_text": "The orientation experience was well organized and informative"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
       }
     }
   }
@@ -107,6 +187,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
         "comment_text": "My team provided excellent help during the project implementation"
       }
     }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
   }
 }'
 
@@ -117,6 +207,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
       "field": "query",
       "document": {
         "comment_text": "I would like to explore internal opportunities in other departments"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
       }
     }
   }
@@ -131,6 +231,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
         "comment_text": "The training session on new tools was very helpful"
       }
     }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
   }
 }'
 
@@ -141,6 +251,16 @@ curl -X POST "localhost:9200/comment_rules/_search" -H 'Content-Type: applicatio
       "field": "query",
       "document": {
         "comment_text": "The onboarding process was smooth and well-structured"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
       }
     }
   }

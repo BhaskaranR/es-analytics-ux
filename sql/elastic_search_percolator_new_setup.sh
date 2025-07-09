@@ -50,5 +50,15 @@ curl -X GET "localhost:9200/comment_rules/_search" -H 'Content-Type: application
         "text": "The client support team was extremely helpful and responsive."
       }
     }
+  },
+  "highlight": {
+    "fields": {
+      "text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
   }
 }'  

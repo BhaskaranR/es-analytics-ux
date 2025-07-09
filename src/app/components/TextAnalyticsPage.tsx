@@ -6,13 +6,12 @@ import { Badge } from '@/registry/new-york-v4/ui/badge';
 import { Button } from '@/registry/new-york-v4/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
 import { Checkbox } from '@/registry/new-york-v4/ui/checkbox';
-import { Input } from '@/registry/new-york-v4/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/registry/new-york-v4/ui/select';
 import { Separator } from '@/registry/new-york-v4/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/registry/new-york-v4/ui/tabs';
 
 import { getMockCommentsByRule, getMockCommentsForTopic, getMockRulesForTopic } from '../../_mock';
-import { Copy, Edit, Search, Trash2, X } from 'lucide-react';
+import { Copy, Edit, Trash2, X } from 'lucide-react';
 
 interface Rule {
     id: string;
@@ -26,6 +25,7 @@ interface Rule {
 interface MatchedComment {
     comment_text: string;
     highlighted_text?: string;
+    description?: string;
     [key: string]: any;
 }
 
@@ -261,11 +261,6 @@ export default function TextAnalyticsPage() {
                             should: getTopicQueries(topic)
                         }
                     },
-                    highlight: {
-                        fields: {
-                            comment_text: {}
-                        }
-                    },
                     sort: [{ timestamp: { order: 'desc' } }]
                 })
             });
@@ -273,8 +268,9 @@ export default function TextAnalyticsPage() {
             const data = await response.json();
             const topicComments = data.hits.hits.map((hit: any) => ({
                 ...hit._source,
-                highlighted_text:
-                    hit.highlight?.comment_text?.[0] || hit._source.highlighted_text || hit._source.comment_text
+                // Use the stored highlighted_text and description from matched_comments
+                highlighted_text: hit._source.highlighted_text || hit._source.comment_text,
+                description: hit._source.description || 'No description available'
             }));
             setComments(topicComments);
         } catch (error) {
@@ -290,25 +286,14 @@ export default function TextAnalyticsPage() {
         if (viewMode === 'topic' && selectedTopic) {
             fetchCommentsForTopic(selectedTopic);
         } else if (viewMode === 'rule' && selectedRule) {
-            // Find the selected rule's description for highlighting
-            const ruleText = rules.find((r) => r.id === selectedRule)?.description || '';
+            // Fetch comments for specific rule using stored data
             fetch('http://<elasticsearch-host>:9200/matched_comments/_search', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     size: 100,
                     query: {
-                        bool: {
-                            must: [
-                                { term: { rule_id: selectedRule } },
-                                ...(ruleText ? [{ match: { comment_text: ruleText } }] : [])
-                            ]
-                        }
-                    },
-                    highlight: {
-                        fields: {
-                            comment_text: {}
-                        }
+                        term: { rule_id: selectedRule }
                     },
                     sort: [{ timestamp: { order: 'desc' } }]
                 })
@@ -318,10 +303,9 @@ export default function TextAnalyticsPage() {
                     setComments(
                         data.hits.hits.map((hit: any) => ({
                             ...hit._source,
-                            highlighted_text:
-                                hit.highlight?.comment_text?.[0] ||
-                                hit._source.highlighted_text ||
-                                hit._source.comment_text
+                            // Use the stored highlighted_text and description from matched_comments
+                            highlighted_text: hit._source.highlighted_text || hit._source.comment_text,
+                            description: hit._source.description || 'No description available'
                         }))
                     );
 
@@ -560,10 +544,6 @@ export default function TextAnalyticsPage() {
                                                         : 'No comments found for this rule.'}
                                                 </div>
                                             )}
-
-                                            <div className='mt-4 text-xs text-gray-500'>
-                                                Last updated 3/27/2025 1:09 PM
-                                            </div>
                                         </CardContent>
                                     </Card>
                                 </div>

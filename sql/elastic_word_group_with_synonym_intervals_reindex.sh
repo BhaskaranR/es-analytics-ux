@@ -7,7 +7,7 @@ POST /comment_rules/_search
 {
   "query": {
     "percolate": {
-      "field": "rule_query",
+      "field": "query",
       "document": {
         "comment_text": "I want more career opportunities for growth and advancement."
       }
@@ -18,7 +18,8 @@ POST /comment_rules/_search
       "comment_text": {
         "pre_tags": ["<mark>"],
         "post_tags": ["</mark>"],
-        "type": "unified"
+        "fragment_size": 150,
+        "number_of_fragments": 3
       }
     }
   }
@@ -39,6 +40,7 @@ Assume response returns:
         "_score": 0.8,
         "_source": {
           "topic": "Client Support",
+          "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -52,6 +54,11 @@ Assume response returns:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "I want more <mark>career</mark> <mark>opportunities</mark> for growth and advancement."
+          ]
         }
       },
       {
@@ -59,6 +66,7 @@ Assume response returns:
         "_score": 0.6,
         "_source": {
           "topic": "Client Help",
+          "description": "client NEAR support WITHIN 4 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -72,6 +80,11 @@ Assume response returns:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "I want more career <mark>opportunities</mark> for growth and advancement."
+          ]
         }
       }
     ]
@@ -85,10 +98,12 @@ POST /matched_comments/_doc
   "rule_id": "1",
   "comment_text": "I received excellent support from the customer service team.",
   "topic": "Client Support",
+  "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
   "score": 0.8,
   "matched_terms": ["bacghr_client", "bacghr_support"],
   "max_gaps": 5,
   "ordered": false,
+  "highlighted_text": "I received excellent <mark>support</mark> from the <mark>customer</mark> service team.",
   "timestamp": "2024-03-20T10:00:00Z"
 }
 
@@ -97,10 +112,12 @@ POST /matched_comments/_doc
   "rule_id": "7",
   "comment_text": "I received excellent support from the customer service team.",
   "topic": "Client Help",
+  "description": "client NEAR support WITHIN 4 WORDS",
   "score": 0.6,
   "matched_terms": ["client", "support"],
   "max_gaps": 4,
   "ordered": false,
+  "highlighted_text": "I received excellent <mark>support</mark> from the customer service team.",
   "timestamp": "2024-03-20T10:00:00Z"
 }
 
@@ -167,10 +184,24 @@ POST /_reindex
 
 ```bash
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "I received excellent support from the customer service team." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "I received excellent support from the customer service team." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -182,6 +213,7 @@ Response:
         "_score": 0.8,
         "_source": {
           "topic": "Client Support",
+          "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -195,6 +227,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "I received excellent <mark>support</mark> from the <mark>customer</mark> service team."
+          ]
         }
       },
       {
@@ -202,6 +239,7 @@ Response:
         "_score": 0.6,
         "_source": {
           "topic": "Client Help",
+          "description": "client NEAR support WITHIN 4 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -215,6 +253,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "I received excellent <mark>support</mark> from the customer service team."
+          ]
         }
       }
     ]
@@ -247,10 +290,24 @@ POST /matched_comments/_doc
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "The training session helped me understand the new tools better." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "The training session helped me understand the new tools better." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -262,6 +319,7 @@ Response:
         "_score": 0.9,
         "_source": {
           "topic": "Employee Training",
+          "description": "training NEAR session WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -275,6 +333,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "The <mark>training</mark> <mark>session</mark> helped me understand the new tools better."
+          ]
         }
       }
     ]
@@ -287,18 +350,34 @@ POST /matched_comments/_doc
   "rule_id": "11",
   "comment_text": "The training session helped me understand the new tools better.",
   "topic": "Employee Training",
+  "description": "training NEAR session WITHIN 3 WORDS",
   "score": 0.9,
   "matched_terms": ["training", "session"],
   "max_gaps": 3,
   "ordered": false,
+  "highlighted_text": "The <mark>training</mark> <mark>session</mark> helped me understand the new tools better.",
   "timestamp": "2024-03-20T10:01:00Z"
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "Team collaboration and communication have been excellent lately." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "Team collaboration and communication have been excellent lately." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -310,6 +389,7 @@ Response:
         "_score": 0.85,
         "_source": {
           "topic": "Team Collaboration",
+          "description": "team NEAR collaboration WITHIN 4 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -323,6 +403,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "<mark>Team</mark> <mark>collaboration</mark> and communication have been excellent lately."
+          ]
         }
       },
       {
@@ -330,6 +415,7 @@ Response:
         "_score": 0.7,
         "_source": {
           "topic": "Team Support",
+          "description": "team NEAR help WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -343,6 +429,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "<mark>Team</mark> collaboration and communication have been excellent lately."
+          ]
         }
       }
     ]
@@ -355,10 +446,12 @@ POST /matched_comments/_doc
   "rule_id": "5",
   "comment_text": "Team collaboration and communication have been excellent lately.",
   "topic": "Team Collaboration",
+  "description": "team NEAR collaboration WITHIN 4 WORDS",
   "score": 0.85,
   "matched_terms": ["team", "collaboration"],
   "max_gaps": 4,
   "ordered": false,
+  "highlighted_text": "<mark>Team</mark> <mark>collaboration</mark> and communication have been excellent lately.",
   "timestamp": "2024-03-20T10:02:00Z"
 }
 
@@ -367,18 +460,34 @@ POST /matched_comments/_doc
   "rule_id": "9",
   "comment_text": "Team collaboration and communication have been excellent lately.",
   "topic": "Team Support",
+  "description": "team NEAR help WITHIN 3 WORDS",
   "score": 0.7,
   "matched_terms": ["team", "help"],
   "max_gaps": 3,
   "ordered": false,
+  "highlighted_text": "<mark>Team</mark> collaboration and communication have been excellent lately.",
   "timestamp": "2024-03-20T10:02:00Z"
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "Onboarding process was smooth and orientation was helpful." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "Onboarding process was smooth and orientation was helpful." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -390,6 +499,7 @@ Response:
         "_score": 0.9,
         "_source": {
           "topic": "Onboarding Process",
+          "description": "onboarding NEAR process WITHIN 2 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -403,6 +513,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "<mark>Onboarding</mark> <mark>process</mark> was smooth and orientation was helpful."
+          ]
         }
       },
       {
@@ -410,6 +525,7 @@ Response:
         "_score": 0.75,
         "_source": {
           "topic": "Onboarding Feedback",
+          "description": "\"orientation experience\" WITHIN 2 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -422,6 +538,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "Onboarding process was smooth and <mark>orientation</mark> was helpful."
+          ]
         }
       }
     ]
@@ -434,10 +555,12 @@ POST /matched_comments/_doc
   "rule_id": "12",
   "comment_text": "Onboarding process was smooth and orientation was helpful.",
   "topic": "Onboarding Process",
+  "description": "onboarding NEAR process WITHIN 2 WORDS",
   "score": 0.9,
   "matched_terms": ["onboarding", "process"],
   "max_gaps": 2,
   "ordered": false,
+  "highlighted_text": "<mark>Onboarding</mark> <mark>process</mark> was smooth and orientation was helpful.",
   "timestamp": "2024-03-20T10:03:00Z"
 }
 
@@ -446,18 +569,34 @@ POST /matched_comments/_doc
   "rule_id": "8",
   "comment_text": "Onboarding process was smooth and orientation was helpful.",
   "topic": "Onboarding Feedback",
+  "description": "\"orientation experience\" WITHIN 2 WORDS",
   "score": 0.75,
   "matched_terms": ["orientation experience"],
   "max_gaps": 2,
   "ordered": true,
+  "highlighted_text": "Onboarding process was smooth and <mark>orientation</mark> was helpful.",
   "timestamp": "2024-03-20T10:03:00Z"
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "Career growth seems stagnant without promotion opportunities." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "Career growth seems stagnant without promotion opportunities." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -469,6 +608,7 @@ Response:
         "_score": 0.95,
         "_source": {
           "topic": "Career Concerns",
+          "description": "lack NEAR bacghr_career WITHIN 2 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -482,6 +622,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "<mark>Career</mark> growth seems stagnant without <mark>promotion</mark> opportunities."
+          ]
         }
       },
       {
@@ -489,6 +634,7 @@ Response:
         "_score": 0.8,
         "_source": {
           "topic": "Career Progression",
+          "description": "promotion NEAR career WITHIN 4 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -502,6 +648,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "<mark>Career</mark> growth seems stagnant without <mark>promotion</mark> opportunities."
+          ]
         }
       }
     ]
@@ -514,10 +665,12 @@ POST /matched_comments/_doc
   "rule_id": "2",
   "comment_text": "Career growth seems stagnant without promotion opportunities.",
   "topic": "Career Concerns",
+  "description": "lack NEAR bacghr_career WITHIN 2 WORDS",
   "score": 0.95,
   "matched_terms": ["lack", "bacghr_career"],
   "max_gaps": 2,
   "ordered": false,
+  "highlighted_text": "<mark>Career</mark> growth seems stagnant without <mark>promotion</mark> opportunities.",
   "timestamp": "2024-03-20T10:04:00Z"
 }
 
@@ -526,18 +679,34 @@ POST /matched_comments/_doc
   "rule_id": "6",
   "comment_text": "Career growth seems stagnant without promotion opportunities.",
   "topic": "Career Progression",
+  "description": "promotion NEAR career WITHIN 4 WORDS",
   "score": 0.8,
   "matched_terms": ["promotion", "career"],
   "max_gaps": 4,
   "ordered": false,
+  "highlighted_text": "<mark>Career</mark> growth seems stagnant without <mark>promotion</mark> opportunities.",
   "timestamp": "2024-03-20T10:04:00Z"
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "Internal transfers offer great opportunities for career development." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "Internal transfers offer great opportunities for career development." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -549,6 +718,7 @@ Response:
         "_score": 0.85,
         "_source": {
           "topic": "Internal Movement",
+          "description": "internal NEAR opportunity WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -562,6 +732,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "<mark>Internal</mark> transfers offer great <mark>opportunities</mark> for career development."
+          ]
         }
       },
       {
@@ -569,6 +744,7 @@ Response:
         "_score": 0.7,
         "_source": {
           "topic": "Career Concerns",
+          "description": "lack NEAR bacghr_career WITHIN 2 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -582,6 +758,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "Internal transfers offer great opportunities for <mark>career</mark> development."
+          ]
         }
       }
     ]
@@ -594,10 +775,12 @@ POST /matched_comments/_doc
   "rule_id": "10",
   "comment_text": "Internal transfers offer great opportunities for career development.",
   "topic": "Internal Movement",
+  "description": "internal NEAR opportunity WITHIN 3 WORDS",
   "score": 0.85,
   "matched_terms": ["internal", "opportunity"],
   "max_gaps": 3,
   "ordered": false,
+  "highlighted_text": "<mark>Internal</mark> transfers offer great <mark>opportunities</mark> for career development.",
   "timestamp": "2024-03-20T10:05:00Z"
 }
 
@@ -606,18 +789,34 @@ POST /matched_comments/_doc
   "rule_id": "3",
   "comment_text": "Internal transfers offer great opportunities for career development.",
   "topic": "Career Concerns",
+  "description": "lack NEAR bacghr_career WITHIN 2 WORDS",
   "score": 0.7,
   "matched_terms": ["lack", "bacghr_career"],
   "max_gaps": 2,
   "ordered": false,
+  "highlighted_text": "Internal transfers offer great opportunities for <mark>career</mark> development.",
   "timestamp": "2024-03-20T10:05:00Z"
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "The new learning program supports employee growth and skill-building." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "The new learning program supports employee growth and skill-building." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -629,6 +828,7 @@ Response:
         "_score": 0.9,
         "_source": {
           "topic": "Learning Growth Opportunities",
+          "description": "learning NEAR growth WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -642,6 +842,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "The new <mark>learning</mark> program supports employee <mark>growth</mark> and skill-building."
+          ]
         }
       },
       {
@@ -649,6 +854,7 @@ Response:
         "_score": 0.75,
         "_source": {
           "topic": "Simple Learning Growth",
+          "description": "\"learning growth\" WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -661,6 +867,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "The new <mark>learning</mark> <mark>growth</mark> program supports employee skill-building."
+          ]
         }
       }
     ]
@@ -673,10 +884,12 @@ POST /matched_comments/_doc
   "rule_id": "13",
   "comment_text": "The new learning program supports employee growth and skill-building.",
   "topic": "Learning Growth Opportunities",
+  "description": "learning NEAR growth WITHIN 5 WORDS",
   "score": 0.9,
   "matched_terms": ["learning", "growth"],
   "max_gaps": 5,
   "ordered": false,
+  "highlighted_text": "The new <mark>learning</mark> program supports employee <mark>growth</mark> and skill-building.",
   "timestamp": "2024-03-20T10:06:00Z"
 }
 
@@ -685,18 +898,34 @@ POST /matched_comments/_doc
   "rule_id": "14",
   "comment_text": "The new learning program supports employee growth and skill-building.",
   "topic": "Simple Learning Growth",
+  "description": "\"learning growth\" WITHIN 3 WORDS",
   "score": 0.75,
   "matched_terms": ["learning growth"],
   "max_gaps": 3,
   "ordered": true,
+  "highlighted_text": "The new <mark>learning</mark> <mark>growth</mark> program supports employee skill-building.",
   "timestamp": "2024-03-20T10:06:00Z"
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "Our client was satisfied with the prompt assistance provided." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "Our client was satisfied with the prompt assistance provided." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -708,6 +937,7 @@ Response:
         "_score": 0.85,
         "_source": {
           "topic": "Client Satisfaction",
+          "description": "client NEAR support WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -721,6 +951,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "Our <mark>client</mark> was satisfied with the prompt <mark>assistance</mark> provided."
+          ]
         }
       },
       {
@@ -728,6 +963,7 @@ Response:
         "_score": 0.7,
         "_source": {
           "topic": "Client Help",
+          "description": "client NEAR support WITHIN 4 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -741,6 +977,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "Our <mark>client</mark> was satisfied with the prompt assistance provided."
+          ]
         }
       }
     ]
@@ -753,10 +994,12 @@ POST /matched_comments/_doc
   "rule_id": "3",
   "comment_text": "Our client was satisfied with the prompt assistance provided.",
   "topic": "Client Satisfaction",
+  "description": "client NEAR support WITHIN 5 WORDS",
   "score": 0.85,
   "matched_terms": ["client", "support"],
   "max_gaps": 5,
   "ordered": false,
+  "highlighted_text": "Our <mark>client</mark> was satisfied with the prompt <mark>assistance</mark> provided.",
   "timestamp": "2024-03-20T10:07:00Z"
 }
 
@@ -765,18 +1008,34 @@ POST /matched_comments/_doc
   "rule_id": "7",
   "comment_text": "Our client was satisfied with the prompt assistance provided.",
   "topic": "Client Help",
+  "description": "client NEAR support WITHIN 4 WORDS",
   "score": 0.7,
   "matched_terms": ["client", "support"],
   "max_gaps": 4,
   "ordered": false,
+  "highlighted_text": "Our <mark>client</mark> was satisfied with the prompt assistance provided.",
   "timestamp": "2024-03-20T10:07:00Z"
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "Orientation experience could be improved to reduce confusion." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "Orientation experience could be improved to reduce confusion." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -788,6 +1047,7 @@ Response:
         "_score": 0.95,
         "_source": {
           "topic": "Onboarding Feedback",
+          "description": "\"orientation experience\" WITHIN 2 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -800,6 +1060,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "<mark>Orientation</mark> <mark>experience</mark> could be improved to reduce confusion."
+          ]
         }
       }
     ]
@@ -812,18 +1077,34 @@ POST /matched_comments/_doc
   "rule_id": "8",
   "comment_text": "Orientation experience could be improved to reduce confusion.",
   "topic": "Onboarding Feedback",
+  "description": "\"orientation experience\" WITHIN 2 WORDS",
   "score": 0.95,
   "matched_terms": ["orientation experience"],
   "max_gaps": 2,
   "ordered": true,
+  "highlighted_text": "<mark>Orientation</mark> <mark>experience</mark> could be improved to reduce confusion.",
   "timestamp": "2024-03-20T10:08:00Z"
 }
 
 POST /comment_rules/_search
-{ "query": { "percolate": {
-    "field": "rule_query",
-    "document": { "comment_text": "IJP offers a good internal opportunity for advancement." }
-} } }
+{ 
+  "query": { 
+    "percolate": {
+      "field": "query",
+      "document": { "comment_text": "IJP offers a good internal opportunity for advancement." }
+    } 
+  },
+  "highlight": {
+    "fields": {
+      "comment_text": {
+        "pre_tags": ["<mark>"],
+        "post_tags": ["</mark>"],
+        "fragment_size": 150,
+        "number_of_fragments": 3
+      }
+    }
+  }
+}
 
 Response:
 {
@@ -835,6 +1116,7 @@ Response:
         "_score": 0.9,
         "_source": {
           "topic": "Internal Movement",
+          "description": "internal NEAR opportunity WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -848,13 +1130,19 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "IJP offers a good <mark>internal</mark> <mark>opportunity</mark> for advancement."
+          ]
         }
       },
       {
         "_id": "15",
         "_score": 0.8,
         "_source": {
-          "topic": "Internal Department Movement",
+          "topic": "Internal Department Movement", 
+          "description": "bacghr_internalmove NEAR departments WITHIN 4 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -868,6 +1156,11 @@ Response:
               }
             }
           }
+        },
+        "highlight": {
+          "comment_text": [
+            "IJP offers a good <mark>internal</mark> opportunity for advancement."
+          ]
         }
       }
     ]
@@ -880,10 +1173,12 @@ POST /matched_comments/_doc
   "rule_id": "10",
   "comment_text": "IJP offers a good internal opportunity for advancement.",
   "topic": "Internal Movement",
+  "description": "internal NEAR opportunity WITHIN 3 WORDS",
   "score": 0.9,
   "matched_terms": ["internal", "opportunity"],
   "max_gaps": 3,
   "ordered": false,
+  "highlighted_text": "IJP offers a good <mark>internal</mark> <mark>opportunity</mark> for advancement.",
   "timestamp": "2024-03-20T10:09:00Z"
 }
 
@@ -892,10 +1187,12 @@ POST /matched_comments/_doc
   "rule_id": "15",
   "comment_text": "IJP offers a good internal opportunity for advancement.",
   "topic": "Internal Department Movement",
+  "description": "bacghr_internalmove NEAR departments WITHIN 4 WORDS",
   "score": 0.8,
   "matched_terms": ["bacghr_internalmove", "departments"],
   "max_gaps": 4,
   "ordered": false,
+  "highlighted_text": "IJP offers a good <mark>internal</mark> opportunity for advancement.",
   "timestamp": "2024-03-20T10:09:00Z"
 }
 
