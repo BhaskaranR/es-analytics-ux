@@ -36,19 +36,19 @@ Assume response returns:
     },
     "hits": [
       {
-        "_id": "1",
+        "_id": "career_1",
         "_score": 0.8,
         "_source": {
-          "topic": "Client Support",
-          "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
                 "all_of": {
                   "ordered": false,
                   "intervals": [
-                    {"match": {"query": "bacghr_client", "analyzer": "search_analyzer", "max_gaps": 5}},
-                    {"match": {"query": "bacghr_support", "analyzer": "search_analyzer", "max_gaps": 5}}
+                    {"match": {"query": "bacghr_career", "analyzer": "search_analyzer", "max_gaps": 5}},
+                    {"match": {"query": "bacghr_opportunity", "analyzer": "search_analyzer", "max_gaps": 5}}
                   ]
                 }
               }
@@ -62,19 +62,19 @@ Assume response returns:
         }
       },
       {
-        "_id": "7",
+        "_id": "career_2",
         "_score": 0.6,
         "_source": {
-          "topic": "Client Help",
-          "description": "client NEAR support WITHIN 4 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
                 "all_of": {
                   "ordered": false,
                   "intervals": [
-                    {"match": {"query": "client", "max_gaps": 4}},
-                    {"match": {"query": "support", "max_gaps": 4}}
+                    {"match": {"query": "bacghr_learning", "analyzer": "search_analyzer", "max_gaps": 3}},
+                    {"match": {"query": "bacghr_career", "analyzer": "search_analyzer", "max_gaps": 3}}
                   ]
                 }
               }
@@ -83,7 +83,7 @@ Assume response returns:
         },
         "highlight": {
           "comment_text": [
-            "I want more career <mark>opportunities</mark> for growth and advancement."
+            "I want more <mark>career</mark> opportunities for growth and advancement."
           ]
         }
       }
@@ -95,29 +95,29 @@ Assume response returns:
 # Store each rule match as a separate document for easy retrieval
 POST /matched_comments/_doc
 {
-  "rule_id": "1",
-  "comment_text": "I received excellent support from the customer service team.",
-  "topic": "Client Support",
-  "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
+  "rule_id": "career_1",
+  "comment_text": "I want more career opportunities for growth and advancement.",
+  "topic": "Career Development",
+  "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
   "score": 0.8,
-  "matched_terms": ["bacghr_client", "bacghr_support"],
+  "matched_terms": ["bacghr_career", "bacghr_opportunity"],
   "max_gaps": 5,
   "ordered": false,
-  "highlighted_text": "I received excellent <mark>support</mark> from the <mark>customer</mark> service team.",
+  "highlighted_text": "I want more <mark>career</mark> <mark>opportunities</mark> for growth and advancement.",
   "timestamp": "2024-03-20T10:00:00Z"
 }
 
 POST /matched_comments/_doc
 {
-  "rule_id": "7",
-  "comment_text": "I received excellent support from the customer service team.",
-  "topic": "Client Help",
-  "description": "client NEAR support WITHIN 4 WORDS",
+  "rule_id": "career_2",
+  "comment_text": "I want more career opportunities for growth and advancement.",
+  "topic": "Career Development",
+  "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.6,
-  "matched_terms": ["client", "support"],
-  "max_gaps": 4,
+  "matched_terms": ["bacghr_learning", "bacghr_career"],
+  "max_gaps": 3,
   "ordered": false,
-  "highlighted_text": "I received excellent <mark>support</mark> from the customer service team.",
+  "highlighted_text": "I want more <mark>career</mark> opportunities for growth and advancement.",
   "timestamp": "2024-03-20T10:00:00Z"
 }
 
@@ -209,7 +209,7 @@ Response:
     "total": { "value": 2, "relation": "eq" },
     "hits": [
       {
-        "_id": "1",
+        "_id": "client_1",
         "_score": 0.8,
         "_source": {
           "topic": "Client Support",
@@ -235,19 +235,19 @@ Response:
         }
       },
       {
-        "_id": "7",
+        "_id": "client_2",
         "_score": 0.6,
         "_source": {
-          "topic": "Client Help",
-          "description": "client NEAR support WITHIN 4 WORDS",
+          "topic": "Client Support",
+          "description": "client NEAR support WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
                 "all_of": {
                   "ordered": false,
                   "intervals": [
-                    {"match": {"query": "client", "max_gaps": 4}},
-                    {"match": {"query": "support", "max_gaps": 4}}
+                    {"match": {"query": "client", "analyzer": "search_analyzer", "max_gaps": 5}},
+                    {"match": {"query": "support", "analyzer": "search_analyzer", "max_gaps": 5}}
                   ]
                 }
               }
@@ -267,25 +267,29 @@ Response:
 # Store each rule match as separate document
 POST /matched_comments/_doc
 {
-  "rule_id": "1",
+  "rule_id": "client_1",
   "comment_text": "I received excellent support from the customer service team.",
   "topic": "Client Support",
+  "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
   "score": 0.8,
   "matched_terms": ["bacghr_client", "bacghr_support"],
   "max_gaps": 5,
   "ordered": false,
+  "highlighted_text": "I received excellent <mark>support</mark> from the <mark>customer</mark> service team.",
   "timestamp": "2024-03-20T10:00:00Z"
 }
 
 POST /matched_comments/_doc
 {
-  "rule_id": "7",
+  "rule_id": "client_2",
   "comment_text": "I received excellent support from the customer service team.",
-  "topic": "Client Help",
+  "topic": "Client Support",
+  "description": "client NEAR support WITHIN 5 WORDS",
   "score": 0.6,
   "matched_terms": ["client", "support"],
-  "max_gaps": 4,
+  "max_gaps": 5,
   "ordered": false,
+  "highlighted_text": "I received excellent <mark>support</mark> from the customer service team.",
   "timestamp": "2024-03-20T10:00:00Z"
 }
 
@@ -315,19 +319,19 @@ Response:
     "total": { "value": 1, "relation": "eq" },
     "hits": [
       {
-        "_id": "11",
+        "_id": "career_2",
         "_score": 0.9,
         "_source": {
-          "topic": "Employee Training",
-          "description": "training NEAR session WITHIN 3 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
                 "all_of": {
                   "ordered": false,
                   "intervals": [
-                    {"match": {"query": "training", "analyzer": "search_analyzer", "max_gaps": 3}},
-                    {"match": {"query": "session", "analyzer": "search_analyzer", "max_gaps": 3}}
+                    {"match": {"query": "bacghr_learning", "analyzer": "search_analyzer", "max_gaps": 3}},
+                    {"match": {"query": "bacghr_career", "analyzer": "search_analyzer", "max_gaps": 3}}
                   ]
                 }
               }
@@ -336,7 +340,7 @@ Response:
         },
         "highlight": {
           "comment_text": [
-            "The <mark>training</mark> <mark>session</mark> helped me understand the new tools better."
+            "The <mark>training</mark> session helped me understand the new tools better."
           ]
         }
       }
@@ -347,15 +351,15 @@ Response:
 # Store matched comment
 POST /matched_comments/_doc
 {
-  "rule_id": "11",
+  "rule_id": "career_2",
   "comment_text": "The training session helped me understand the new tools better.",
-  "topic": "Employee Training",
-  "description": "training NEAR session WITHIN 3 WORDS",
+  "topic": "Career Development",
+  "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.9,
-  "matched_terms": ["training", "session"],
+  "matched_terms": ["bacghr_learning", "bacghr_career"],
   "max_gaps": 3,
   "ordered": false,
-  "highlighted_text": "The <mark>training</mark> <mark>session</mark> helped me understand the new tools better.",
+  "highlighted_text": "The <mark>training</mark> session helped me understand the new tools better.",
   "timestamp": "2024-03-20T10:01:00Z"
 }
 
@@ -385,7 +389,7 @@ Response:
     "total": { "value": 2, "relation": "eq" },
     "hits": [
       {
-        "_id": "5",
+        "_id": "team_1",
         "_score": 0.85,
         "_source": {
           "topic": "Team Collaboration",
@@ -411,10 +415,10 @@ Response:
         }
       },
       {
-        "_id": "9",
+        "_id": "team_2",
         "_score": 0.7,
         "_source": {
-          "topic": "Team Support",
+          "topic": "Team Collaboration",
           "description": "team NEAR help WITHIN 3 WORDS",
           "query": {
             "intervals": {
@@ -443,7 +447,7 @@ Response:
 # Store each rule match as separate document
 POST /matched_comments/_doc
 {
-  "rule_id": "5",
+  "rule_id": "team_1",
   "comment_text": "Team collaboration and communication have been excellent lately.",
   "topic": "Team Collaboration",
   "description": "team NEAR collaboration WITHIN 4 WORDS",
@@ -457,9 +461,9 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "9",
+  "rule_id": "team_2",
   "comment_text": "Team collaboration and communication have been excellent lately.",
-  "topic": "Team Support",
+  "topic": "Team Collaboration",
   "description": "team NEAR help WITHIN 3 WORDS",
   "score": 0.7,
   "matched_terms": ["team", "help"],
@@ -492,48 +496,23 @@ POST /comment_rules/_search
 Response:
 {
   "hits": {
-    "total": { "value": 2, "relation": "eq" },
+    "total": { "value": 1, "relation": "eq" },
     "hits": [
       {
-        "_id": "12",
+        "_id": "career_2",
         "_score": 0.9,
         "_source": {
-          "topic": "Onboarding Process",
-          "description": "onboarding NEAR process WITHIN 2 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
                 "all_of": {
                   "ordered": false,
                   "intervals": [
-                    {"match": {"query": "onboarding", "analyzer": "search_analyzer", "max_gaps": 2}},
-                    {"match": {"query": "process", "analyzer": "search_analyzer", "max_gaps": 2}}
+                    {"match": {"query": "bacghr_learning", "analyzer": "search_analyzer", "max_gaps": 3}},
+                    {"match": {"query": "bacghr_career", "analyzer": "search_analyzer", "max_gaps": 3}}
                   ]
-                }
-              }
-            }
-          }
-        },
-        "highlight": {
-          "comment_text": [
-            "<mark>Onboarding</mark> <mark>process</mark> was smooth and orientation was helpful."
-          ]
-        }
-      },
-      {
-        "_id": "8",
-        "_score": 0.75,
-        "_source": {
-          "topic": "Onboarding Feedback",
-          "description": "\"orientation experience\" WITHIN 2 WORDS",
-          "query": {
-            "intervals": {
-              "comment_text": {
-                "match": {
-                  "query": "orientation experience",
-                  "analyzer": "search_analyzer",
-                  "ordered": true,
-                  "max_gaps": 2
                 }
               }
             }
@@ -549,31 +528,17 @@ Response:
   }
 }
 
-# Store each rule match as separate document
+# Store matched comment
 POST /matched_comments/_doc
 {
-  "rule_id": "12",
+  "rule_id": "career_2",
   "comment_text": "Onboarding process was smooth and orientation was helpful.",
-  "topic": "Onboarding Process",
-  "description": "onboarding NEAR process WITHIN 2 WORDS",
+  "topic": "Career Development",
+  "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.9,
-  "matched_terms": ["onboarding", "process"],
-  "max_gaps": 2,
+  "matched_terms": ["bacghr_learning", "bacghr_career"],
+  "max_gaps": 3,
   "ordered": false,
-  "highlighted_text": "<mark>Onboarding</mark> <mark>process</mark> was smooth and orientation was helpful.",
-  "timestamp": "2024-03-20T10:03:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "8",
-  "comment_text": "Onboarding process was smooth and orientation was helpful.",
-  "topic": "Onboarding Feedback",
-  "description": "\"orientation experience\" WITHIN 2 WORDS",
-  "score": 0.75,
-  "matched_terms": ["orientation experience"],
-  "max_gaps": 2,
-  "ordered": true,
   "highlighted_text": "Onboarding process was smooth and <mark>orientation</mark> was helpful.",
   "timestamp": "2024-03-20T10:03:00Z"
 }
@@ -604,19 +569,19 @@ Response:
     "total": { "value": 2, "relation": "eq" },
     "hits": [
       {
-        "_id": "2",
+        "_id": "career_4",
         "_score": 0.95,
         "_source": {
-          "topic": "Career Concerns",
-          "description": "lack NEAR bacghr_career WITHIN 2 WORDS",
+          "topic": "Career Development",
+          "description": "lack NEAR bacghr_career WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
                 "all_of": {
                   "ordered": false,
                   "intervals": [
-                    {"match": {"query": "lack", "analyzer": "search_analyzer", "max_gaps": 2}},
-                    {"match": {"query": "bacghr_career", "analyzer": "search_analyzer", "max_gaps": 2}}
+                    {"match": {"query": "lack", "analyzer": "search_analyzer", "max_gaps": 3}},
+                    {"match": {"query": "bacghr_career", "analyzer": "search_analyzer", "max_gaps": 3}}
                   ]
                 }
               }
@@ -630,10 +595,10 @@ Response:
         }
       },
       {
-        "_id": "6",
+        "_id": "career_3",
         "_score": 0.8,
         "_source": {
-          "topic": "Career Progression",
+          "topic": "Career Development",
           "description": "promotion NEAR career WITHIN 4 WORDS",
           "query": {
             "intervals": {
@@ -662,13 +627,13 @@ Response:
 # Store each rule match as separate document
 POST /matched_comments/_doc
 {
-  "rule_id": "2",
+  "rule_id": "career_4",
   "comment_text": "Career growth seems stagnant without promotion opportunities.",
-  "topic": "Career Concerns",
-  "description": "lack NEAR bacghr_career WITHIN 2 WORDS",
+  "topic": "Career Development",
+  "description": "lack NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.95,
   "matched_terms": ["lack", "bacghr_career"],
-  "max_gaps": 2,
+  "max_gaps": 3,
   "ordered": false,
   "highlighted_text": "<mark>Career</mark> growth seems stagnant without <mark>promotion</mark> opportunities.",
   "timestamp": "2024-03-20T10:04:00Z"
@@ -676,9 +641,9 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "6",
+  "rule_id": "career_3",
   "comment_text": "Career growth seems stagnant without promotion opportunities.",
-  "topic": "Career Progression",
+  "topic": "Career Development",
   "description": "promotion NEAR career WITHIN 4 WORDS",
   "score": 0.8,
   "matched_terms": ["promotion", "career"],
@@ -714,11 +679,11 @@ Response:
     "total": { "value": 2, "relation": "eq" },
     "hits": [
       {
-        "_id": "10",
+        "_id": "career_1",
         "_score": 0.85,
         "_source": {
-          "topic": "Internal Movement",
-          "description": "internal NEAR opportunity WITHIN 3 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -740,11 +705,11 @@ Response:
         }
       },
       {
-        "_id": "3",
+        "_id": "career_4",
         "_score": 0.7,
         "_source": {
-          "topic": "Career Concerns",
-          "description": "lack NEAR bacghr_career WITHIN 2 WORDS",
+          "topic": "Career Development",
+          "description": "lack NEAR bacghr_career WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -772,13 +737,13 @@ Response:
 # Store each rule match as separate document
 POST /matched_comments/_doc
 {
-  "rule_id": "10",
+  "rule_id": "career_1",
   "comment_text": "Internal transfers offer great opportunities for career development.",
-  "topic": "Internal Movement",
-  "description": "internal NEAR opportunity WITHIN 3 WORDS",
+  "topic": "Career Development",
+  "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
   "score": 0.85,
-  "matched_terms": ["internal", "opportunity"],
-  "max_gaps": 3,
+  "matched_terms": ["bacghr_career", "bacghr_opportunity"],
+  "max_gaps": 5,
   "ordered": false,
   "highlighted_text": "<mark>Internal</mark> transfers offer great <mark>opportunities</mark> for career development.",
   "timestamp": "2024-03-20T10:05:00Z"
@@ -786,13 +751,13 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "3",
+  "rule_id": "career_4",
   "comment_text": "Internal transfers offer great opportunities for career development.",
-  "topic": "Career Concerns",
-  "description": "lack NEAR bacghr_career WITHIN 2 WORDS",
+  "topic": "Career Development",
+  "description": "lack NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.7,
   "matched_terms": ["lack", "bacghr_career"],
-  "max_gaps": 2,
+  "max_gaps": 3,
   "ordered": false,
   "highlighted_text": "Internal transfers offer great opportunities for <mark>career</mark> development.",
   "timestamp": "2024-03-20T10:05:00Z"
@@ -824,11 +789,11 @@ Response:
     "total": { "value": 2, "relation": "eq" },
     "hits": [
       {
-        "_id": "13",
+        "_id": "career_2",
         "_score": 0.9,
         "_source": {
-          "topic": "Learning Growth Opportunities",
-          "description": "learning NEAR growth WITHIN 5 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -850,11 +815,11 @@ Response:
         }
       },
       {
-        "_id": "14",
+        "_id": "career_2",
         "_score": 0.75,
         "_source": {
-          "topic": "Simple Learning Growth",
-          "description": "\"learning growth\" WITHIN 3 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -881,13 +846,13 @@ Response:
 # Store each rule match as separate document
 POST /matched_comments/_doc
 {
-  "rule_id": "13",
+  "rule_id": "career_2",
   "comment_text": "The new learning program supports employee growth and skill-building.",
-  "topic": "Learning Growth Opportunities",
-  "description": "learning NEAR growth WITHIN 5 WORDS",
+  "topic": "Career Development",
+  "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.9,
-  "matched_terms": ["learning", "growth"],
-  "max_gaps": 5,
+  "matched_terms": ["bacghr_learning", "bacghr_career"],
+  "max_gaps": 3,
   "ordered": false,
   "highlighted_text": "The new <mark>learning</mark> program supports employee <mark>growth</mark> and skill-building.",
   "timestamp": "2024-03-20T10:06:00Z"
@@ -895,15 +860,15 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "14",
+  "rule_id": "career_5",
   "comment_text": "The new learning program supports employee growth and skill-building.",
-  "topic": "Simple Learning Growth",
-  "description": "\"learning growth\" WITHIN 3 WORDS",
+  "topic": "Career Development",
+  "description": "skill NEAR development WITHIN 3 WORDS",
   "score": 0.75,
-  "matched_terms": ["learning growth"],
+  "matched_terms": ["skill", "development"],
   "max_gaps": 3,
-  "ordered": true,
-  "highlighted_text": "The new <mark>learning</mark> <mark>growth</mark> program supports employee skill-building.",
+  "ordered": false,
+  "highlighted_text": "The new learning program supports employee growth and <mark>skill</mark>-building.",
   "timestamp": "2024-03-20T10:06:00Z"
 }
 
@@ -933,11 +898,11 @@ Response:
     "total": { "value": 2, "relation": "eq" },
     "hits": [
       {
-        "_id": "3",
+        "_id": "client_1",
         "_score": 0.85,
         "_source": {
-          "topic": "Client Satisfaction",
-          "description": "client NEAR support WITHIN 5 WORDS",
+          "topic": "Client Support",
+          "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -959,11 +924,11 @@ Response:
         }
       },
       {
-        "_id": "7",
+        "_id": "client_2",
         "_score": 0.7,
         "_source": {
-          "topic": "Client Help",
-          "description": "client NEAR support WITHIN 4 WORDS",
+          "topic": "Client Support",
+          "description": "client NEAR support WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -991,12 +956,12 @@ Response:
 # Store each rule match as separate document
 POST /matched_comments/_doc
 {
-  "rule_id": "3",
+  "rule_id": "client_1",
   "comment_text": "Our client was satisfied with the prompt assistance provided.",
-  "topic": "Client Satisfaction",
-  "description": "client NEAR support WITHIN 5 WORDS",
+  "topic": "Client Support",
+  "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
   "score": 0.85,
-  "matched_terms": ["client", "support"],
+  "matched_terms": ["bacghr_client", "bacghr_support"],
   "max_gaps": 5,
   "ordered": false,
   "highlighted_text": "Our <mark>client</mark> was satisfied with the prompt <mark>assistance</mark> provided.",
@@ -1005,13 +970,13 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "7",
+  "rule_id": "client_2",
   "comment_text": "Our client was satisfied with the prompt assistance provided.",
-  "topic": "Client Help",
-  "description": "client NEAR support WITHIN 4 WORDS",
+  "topic": "Client Support",
+  "description": "client NEAR support WITHIN 5 WORDS",
   "score": 0.7,
   "matched_terms": ["client", "support"],
-  "max_gaps": 4,
+  "max_gaps": 5,
   "ordered": false,
   "highlighted_text": "Our <mark>client</mark> was satisfied with the prompt assistance provided.",
   "timestamp": "2024-03-20T10:07:00Z"
@@ -1043,11 +1008,11 @@ Response:
     "total": { "value": 1, "relation": "eq" },
     "hits": [
       {
-        "_id": "8",
+        "_id": "career_2",
         "_score": 0.95,
         "_source": {
-          "topic": "Onboarding Feedback",
-          "description": "\"orientation experience\" WITHIN 2 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -1074,14 +1039,14 @@ Response:
 # Store matched comment
 POST /matched_comments/_doc
 {
-  "rule_id": "8",
+  "rule_id": "career_2",
   "comment_text": "Orientation experience could be improved to reduce confusion.",
-  "topic": "Onboarding Feedback",
-  "description": "\"orientation experience\" WITHIN 2 WORDS",
+  "topic": "Career Development",
+  "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.95,
-  "matched_terms": ["orientation experience"],
-  "max_gaps": 2,
-  "ordered": true,
+  "matched_terms": ["bacghr_learning", "bacghr_career"],
+  "max_gaps": 3,
+  "ordered": false,
   "highlighted_text": "<mark>Orientation</mark> <mark>experience</mark> could be improved to reduce confusion.",
   "timestamp": "2024-03-20T10:08:00Z"
 }
@@ -1112,11 +1077,11 @@ Response:
     "total": { "value": 2, "relation": "eq" },
     "hits": [
       {
-        "_id": "10",
+        "_id": "career_1",
         "_score": 0.9,
         "_source": {
-          "topic": "Internal Movement",
-          "description": "internal NEAR opportunity WITHIN 3 WORDS",
+          "topic": "Career Development",
+          "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -1138,11 +1103,11 @@ Response:
         }
       },
       {
-        "_id": "15",
+        "_id": "career_1",
         "_score": 0.8,
         "_source": {
-          "topic": "Internal Department Movement", 
-          "description": "bacghr_internalmove NEAR departments WITHIN 4 WORDS",
+          "topic": "Career Development", 
+          "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
           "query": {
             "intervals": {
               "comment_text": {
@@ -1170,13 +1135,13 @@ Response:
 # Store each rule match as separate document
 POST /matched_comments/_doc
 {
-  "rule_id": "10",
+  "rule_id": "career_1",
   "comment_text": "IJP offers a good internal opportunity for advancement.",
-  "topic": "Internal Movement",
-  "description": "internal NEAR opportunity WITHIN 3 WORDS",
+  "topic": "Career Development",
+  "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
   "score": 0.9,
-  "matched_terms": ["internal", "opportunity"],
-  "max_gaps": 3,
+  "matched_terms": ["bacghr_career", "bacghr_opportunity"],
+  "max_gaps": 5,
   "ordered": false,
   "highlighted_text": "IJP offers a good <mark>internal</mark> <mark>opportunity</mark> for advancement.",
   "timestamp": "2024-03-20T10:09:00Z"
@@ -1184,15 +1149,15 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "15",
+  "rule_id": "career_3",
   "comment_text": "IJP offers a good internal opportunity for advancement.",
-  "topic": "Internal Department Movement",
-  "description": "bacghr_internalmove NEAR departments WITHIN 4 WORDS",
+  "topic": "Career Development",
+  "description": "promotion NEAR career WITHIN 4 WORDS",
   "score": 0.8,
-  "matched_terms": ["bacghr_internalmove", "departments"],
+  "matched_terms": ["promotion", "career"],
   "max_gaps": 4,
   "ordered": false,
-  "highlighted_text": "IJP offers a good <mark>internal</mark> opportunity for advancement.",
+  "highlighted_text": "IJP offers a good internal opportunity for <mark>advancement</mark>.",
   "timestamp": "2024-03-20T10:09:00Z"
 }
 
@@ -1200,9 +1165,9 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "cd_1",
+  "rule_id": "career_1",
   "comment_text": "I want more career opportunities for growth and advancement.",
-  "topic": "Career Growth Opportunities",
+  "topic": "Career Development",
   "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
   "score": 0.8,
   "matched_terms": ["bacghr_career", "bacghr_opportunity"],
@@ -1214,9 +1179,9 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "cd_2",
+  "rule_id": "career_2",
   "comment_text": "Learning is important for my career development and growth.",
-  "topic": "Learning and Development",
+  "topic": "Career Development",
   "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.8,
   "matched_terms": ["bacghr_learning", "bacghr_career"],
@@ -1228,12 +1193,12 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "cd_3",
+  "rule_id": "career_3",
   "comment_text": "I want promotion and advancement opportunities in my role.",
-  "topic": "Promotion and Advancement",
-  "description": "promotion NEAR bacghr_advancement WITHIN 4 WORDS",
+  "topic": "Career Development",
+  "description": "promotion NEAR career WITHIN 4 WORDS",
   "score": 0.8,
-  "matched_terms": ["promotion", "bacghr_advancement"],
+  "matched_terms": ["promotion", "career"],
   "max_gaps": 4,
   "ordered": false,
   "highlighted_text": "I want <mark>promotion</mark> and <mark>advancement</mark> opportunities in my role.",
@@ -1242,13 +1207,13 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "cd_4",
+  "rule_id": "career_4",
   "comment_text": "I need a clear career path to understand my future direction.",
-  "topic": "Career Path Clarity",
-  "description": "\"career path\" NEAR clear WITHIN 5 WORDS",
+  "topic": "Career Development",
+  "description": "lack NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.8,
-  "matched_terms": ["career path", "clear"],
-  "max_gaps": 5,
+  "matched_terms": ["lack", "bacghr_career"],
+  "max_gaps": 3,
   "ordered": false,
   "highlighted_text": "I need a <mark>clear</mark> <mark>career path</mark> to understand my future direction.",
   "timestamp": "2024-03-20T10:13:00Z"
@@ -1256,163 +1221,23 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "cd_5",
+  "rule_id": "career_5",
   "comment_text": "I need mentorship for my career development and guidance.",
-  "topic": "Mentorship and Guidance",
-  "description": "bacghr_mentorship NEAR bacghr_career WITHIN 4 WORDS",
-  "score": 0.8,
-  "matched_terms": ["bacghr_mentorship", "bacghr_career"],
-  "max_gaps": 4,
-  "ordered": false,
-  "highlighted_text": "I need <mark>mentorship</mark> for my <mark>career</mark> development and guidance.",
-  "timestamp": "2024-03-20T10:14:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_6",
-  "comment_text": "I want skill development opportunities to grow professionally.",
-  "topic": "Skill Development",
+  "topic": "Career Development",
   "description": "skill NEAR development WITHIN 3 WORDS",
   "score": 0.8,
   "matched_terms": ["skill", "development"],
   "max_gaps": 3,
   "ordered": false,
-  "highlighted_text": "I want <mark>skill</mark> <mark>development</mark> opportunities to grow professionally.",
-  "timestamp": "2024-03-20T10:15:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_7",
-  "comment_text": "There is a lack of career opportunities in this organization.",
-  "topic": "Career Progression Concerns",
-  "description": "lack NEAR bacghr_career WITHIN 3 WORDS",
-  "score": 0.8,
-  "matched_terms": ["lack", "bacghr_career"],
-  "max_gaps": 3,
-  "ordered": false,
-  "highlighted_text": "There is a <mark>lack</mark> of <mark>career</mark> opportunities in this organization.",
-  "timestamp": "2024-03-20T10:16:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_8",
-  "comment_text": "I need training opportunity for growth and development.",
-  "topic": "Training and Education",
-  "description": "training NEAR bacghr_opportunity WITHIN 4 WORDS",
-  "score": 0.8,
-  "matched_terms": ["training", "bacghr_opportunity"],
-  "max_gaps": 4,
-  "ordered": false,
-  "highlighted_text": "I need <mark>training</mark> <mark>opportunity</mark> for growth and development.",
-  "timestamp": "2024-03-20T10:17:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_9",
-  "comment_text": "My career goal is to advance to a leadership position.",
-  "topic": "Career Goals and Aspirations",
-  "description": "goal NEAR bacghr_career WITHIN 4 WORDS",
-  "score": 0.8,
-  "matched_terms": ["goal", "bacghr_career"],
-  "max_gaps": 4,
-  "ordered": false,
-  "highlighted_text": "My <mark>career</mark> <mark>goal</mark> is to advance to a leadership position.",
-  "timestamp": "2024-03-20T10:18:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_10",
-  "comment_text": "I want professional growth and development opportunities.",
-  "topic": "Professional Growth",
-  "description": "professional NEAR growth WITHIN 3 WORDS",
-  "score": 0.8,
-  "matched_terms": ["professional", "growth"],
-  "max_gaps": 3,
-  "ordered": false,
-  "highlighted_text": "I want <mark>professional</mark> <mark>growth</mark> and development opportunities.",
-  "timestamp": "2024-03-20T10:19:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_11",
-  "comment_text": "I need career development support to advance in my role.",
-  "topic": "Career Development Support",
-  "description": "bacghr_career NEAR support WITHIN 5 WORDS",
-  "score": 0.8,
-  "matched_terms": ["bacghr_career", "support"],
-  "max_gaps": 5,
-  "ordered": false,
-  "highlighted_text": "I need <mark>career</mark> development <mark>support</mark> to advance in my role.",
-  "timestamp": "2024-03-20T10:20:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_12",
-  "comment_text": "I want advancement opportunity for career growth.",
-  "topic": "Advancement Opportunities",
-  "description": "bacghr_advancement NEAR bacghr_opportunity WITHIN 4 WORDS",
-  "score": 0.8,
-  "matched_terms": ["bacghr_advancement", "bacghr_opportunity"],
-  "max_gaps": 4,
-  "ordered": false,
-  "highlighted_text": "I want <mark>advancement</mark> <mark>opportunity</mark> for career growth.",
-  "timestamp": "2024-03-20T10:21:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_13",
-  "comment_text": "I need a career plan for the future development.",
-  "topic": "Career Planning",
-  "description": "\"career plan\" NEAR future WITHIN 5 WORDS",
-  "score": 0.8,
-  "matched_terms": ["career plan", "future"],
-  "max_gaps": 5,
-  "ordered": false,
-  "highlighted_text": "I need a <mark>career plan</mark> for the <mark>future</mark> development.",
-  "timestamp": "2024-03-20T10:22:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_14",
-  "comment_text": "I want learning opportunity for professional development.",
-  "topic": "Learning Opportunities",
-  "description": "bacghr_learning NEAR bacghr_opportunity WITHIN 4 WORDS",
-  "score": 0.8,
-  "matched_terms": ["bacghr_learning", "bacghr_opportunity"],
-  "max_gaps": 4,
-  "ordered": false,
-  "highlighted_text": "I want <mark>learning</mark> <mark>opportunity</mark> for professional development.",
-  "timestamp": "2024-03-20T10:23:00Z"
-}
-
-POST /matched_comments/_doc
-{
-  "rule_id": "cd_15",
-  "comment_text": "I need career development feedback to improve my skills.",
-  "topic": "Career Development Feedback",
-  "description": "bacghr_career NEAR feedback WITHIN 5 WORDS",
-  "score": 0.8,
-  "matched_terms": ["bacghr_career", "feedback"],
-  "max_gaps": 5,
-  "ordered": false,
-  "highlighted_text": "I need <mark>career</mark> development <mark>feedback</mark> to improve my skills.",
-  "timestamp": "2024-03-20T10:24:00Z"
+  "highlighted_text": "I need <mark>mentorship</mark> for my <mark>career</mark> development and guidance.",
+  "timestamp": "2024-03-20T10:14:00Z"
 }
 
 # Multiple Rule Matches - Same Comment Matching Multiple Rules
 
 POST /matched_comments/_doc
 {
-  "rule_id": "1",
+  "rule_id": "client_1",
   "comment_text": "Client support and career development are both important to me.",
   "topic": "Client Support",
   "description": "bacghr_client NEAR bacghr_support WITHIN 5 WORDS",
@@ -1426,13 +1251,13 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "cd_11",
+  "rule_id": "career_2",
   "comment_text": "Client support and career development are both important to me.",
-  "topic": "Career Development Support",
-  "description": "bacghr_career NEAR support WITHIN 5 WORDS",
+  "topic": "Career Development",
+  "description": "bacghr_learning NEAR bacghr_career WITHIN 3 WORDS",
   "score": 0.8,
-  "matched_terms": ["bacghr_career", "support"],
-  "max_gaps": 5,
+  "matched_terms": ["bacghr_learning", "bacghr_career"],
+  "max_gaps": 3,
   "ordered": false,
   "highlighted_text": "Client <mark>support</mark> and <mark>career</mark> development are both important to me.",
   "timestamp": "2024-03-20T10:25:00Z"
@@ -1440,7 +1265,7 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "5",
+  "rule_id": "team_1",
   "comment_text": "Team collaboration helps with career growth and development.",
   "topic": "Team Collaboration",
   "description": "team NEAR collaboration WITHIN 4 WORDS",
@@ -1454,9 +1279,9 @@ POST /matched_comments/_doc
 
 POST /matched_comments/_doc
 {
-  "rule_id": "cd_1",
+  "rule_id": "career_1",
   "comment_text": "Team collaboration helps with career growth and development.",
-  "topic": "Career Growth Opportunities",
+  "topic": "Career Development",
   "description": "bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS",
   "score": 0.8,
   "matched_terms": ["bacghr_career", "bacghr_opportunity"],

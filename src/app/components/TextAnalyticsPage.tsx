@@ -113,56 +113,11 @@ export default function TextAnalyticsPage() {
     const getTopicQueries = (topic: string) => {
         switch (topic) {
             case 'career-development':
-                return [
-                    { term: { topic: 'Career Growth Opportunities' } },
-                    { term: { topic: 'Learning and Development' } },
-                    { term: { topic: 'Promotion and Advancement' } },
-                    { term: { topic: 'Career Path Clarity' } },
-                    { term: { topic: 'Mentorship and Guidance' } },
-                    { term: { topic: 'Skill Development' } },
-                    { term: { topic: 'Career Progression Concerns' } },
-                    { term: { topic: 'Training and Education' } },
-                    { term: { topic: 'Career Goals and Aspirations' } },
-                    { term: { topic: 'Professional Growth' } },
-                    { term: { topic: 'Career Development Support' } },
-                    { term: { topic: 'Advancement Opportunities' } },
-                    { term: { topic: 'Career Planning' } },
-                    { term: { topic: 'Learning Opportunities' } },
-                    { term: { topic: 'Career Development Feedback' } }
-                ];
-            case 'employee-networks':
-                return [
-                    { term: { topic: 'Employee Networks' } },
-                    { term: { topic: 'Jewish Heritage' } },
-                    { term: { topic: 'Arab Heritage' } },
-                    { term: { topic: 'Culture Heritage' } },
-                    { term: { topic: 'Veteran Network' } }
-                ];
+                return [{ term: { topic: 'Career Development' } }];
             case 'client-support':
-                return [
-                    { term: { topic: 'Client Support' } },
-                    { term: { topic: 'Client Satisfaction' } },
-                    { term: { topic: 'Client Help' } }
-                ];
+                return [{ term: { topic: 'Client Support' } }];
             case 'team-collaboration':
-                return [{ term: { topic: 'Team Collaboration' } }, { term: { topic: 'Team Support' } }];
-            case 'onboarding':
-                return [{ term: { topic: 'Onboarding Feedback' } }, { term: { topic: 'Onboarding Process' } }];
-            case 'internal-movement':
-                return [{ term: { topic: 'Internal Movement' } }, { term: { topic: 'Internal Department Movement' } }];
-            case 'training-education':
-                return [{ term: { topic: 'Employee Training' } }, { term: { topic: 'Training and Education' } }];
-            case 'learning-growth':
-                return [
-                    { term: { topic: 'Learning and Growth' } },
-                    { term: { topic: 'Learning Growth Opportunities' } },
-                    { term: { topic: 'Simple Learning Growth' } },
-                    { term: { topic: 'Learning Opportunities' } }
-                ];
-            case 'career-progression':
-                return [{ term: { topic: 'Career Progression' } }, { term: { topic: 'Career Progression Concerns' } }];
-            case 'career-concerns':
-                return [{ term: { topic: 'Career Concerns' } }, { term: { topic: 'Career Progression Concerns' } }];
+                return [{ term: { topic: 'Team Collaboration' } }];
             default:
                 return [{ match_all: {} }];
         }
@@ -342,25 +297,9 @@ export default function TextAnalyticsPage() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value='core-topics'>Core Topics</SelectItem>
                                     <SelectItem value='career-development'>Career Development</SelectItem>
-                                    <SelectItem value='employee-networks'>Employee Networks</SelectItem>
                                     <SelectItem value='client-support'>Client Support</SelectItem>
                                     <SelectItem value='team-collaboration'>Team Collaboration</SelectItem>
-                                    <SelectItem value='onboarding'>Onboarding</SelectItem>
-                                    <SelectItem value='internal-movement'>Internal Movement</SelectItem>
-                                    <SelectItem value='training-education'>Training & Education</SelectItem>
-                                    <SelectItem value='learning-growth'>Learning & Growth</SelectItem>
-                                    <SelectItem value='career-progression'>Career Progression</SelectItem>
-                                    <SelectItem value='career-concerns'>Career Concerns</SelectItem>
-                                    <SelectItem value='career-goals'>Career Goals</SelectItem>
-                                    <SelectItem value='career-planning'>Career Planning</SelectItem>
-                                    <SelectItem value='career-feedback'>Career Feedback</SelectItem>
-                                    <SelectItem value='mentorship-guidance'>Mentorship & Guidance</SelectItem>
-                                    <SelectItem value='skill-development'>Skill Development</SelectItem>
-                                    <SelectItem value='advancement-opportunities'>Advancement Opportunities</SelectItem>
-                                    <SelectItem value='professional-growth'>Professional Growth</SelectItem>
-                                    <SelectItem value='career-support'>Career Development Support</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
