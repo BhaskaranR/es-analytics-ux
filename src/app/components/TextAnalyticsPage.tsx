@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
+import { callElasticsearch } from '@/lib/elasticsearch';
 import { Badge } from '@/registry/new-york-v4/ui/badge';
 import { Button } from '@/registry/new-york-v4/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
@@ -45,20 +46,19 @@ export default function TextAnalyticsPage() {
     useEffect(() => {
         const fetchRulesForTopic = async () => {
             try {
-                const response = await fetch('http://<elasticsearch-host>:9200/comment_rules/_search', {
+                const data = await callElasticsearch({
+                    endpoint: '/comment_rules/_search',
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
+                    body: {
                         size: 100,
                         query: {
                             bool: {
                                 should: getTopicQueries(selectedTopic)
                             }
                         }
-                    })
+                    }
                 });
 
-                const data = await response.json();
                 const rulesList: Rule[] = data.hits.hits.map((hit: any) => ({
                     id: hit._id,
                     description: hit._source.description || hit._source.text || hit._source.query,
@@ -171,10 +171,10 @@ export default function TextAnalyticsPage() {
     // Function to fetch counts for a specific rule
     const fetchRuleCounts = async (ruleId: string) => {
         try {
-            const response = await fetch('http://<elasticsearch-host>:9200/matched_comments/_search', {
+            const data = await callElasticsearch({
+                endpoint: '/matched_comments/_search',
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                body: {
                     size: 0,
                     query: {
                         term: { rule_id: ruleId }
@@ -191,10 +191,8 @@ export default function TextAnalyticsPage() {
                             }
                         }
                     }
-                })
+                }
             });
-
-            const data = await response.json();
 
             return {
                 unique: data.aggregations?.unique_comments?.value || 0,
@@ -210,10 +208,10 @@ export default function TextAnalyticsPage() {
     // Function to fetch topic-level counts
     const fetchTopicCounts = async (topic: string) => {
         try {
-            const response = await fetch('http://<elasticsearch-host>:9200/matched_comments/_search', {
+            const data = await callElasticsearch({
+                endpoint: '/matched_comments/_search',
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                body: {
                     size: 0,
                     query: {
                         bool: {
@@ -232,10 +230,8 @@ export default function TextAnalyticsPage() {
                             }
                         }
                     }
-                })
+                }
             });
-
-            const data = await response.json();
 
             return {
                 total: data.aggregations?.total_matches?.value || 0,
@@ -251,10 +247,10 @@ export default function TextAnalyticsPage() {
     // Function to fetch comments for the entire topic
     const fetchCommentsForTopic = async (topic: string) => {
         try {
-            const response = await fetch('http://<elasticsearch-host>:9200/matched_comments/_search', {
+            const data = await callElasticsearch({
+                endpoint: '/matched_comments/_search',
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                body: {
                     size: 100,
                     query: {
                         bool: {
@@ -262,10 +258,9 @@ export default function TextAnalyticsPage() {
                         }
                     },
                     sort: [{ timestamp: { order: 'desc' } }]
-                })
+                }
             });
 
-            const data = await response.json();
             const topicComments = data.hits.hits.map((hit: any) => ({
                 ...hit._source,
                 // Use the stored highlighted_text and description from matched_comments
@@ -287,21 +282,20 @@ export default function TextAnalyticsPage() {
             fetchCommentsForTopic(selectedTopic);
         } else if (viewMode === 'rule' && selectedRule) {
             // Fetch comments for specific rule using stored data
-            fetch('http://<elasticsearch-host>:9200/matched_comments/_search', {
+            callElasticsearch({
+                endpoint: '/matched_comments/_search',
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                body: {
                     size: 100,
                     query: {
                         term: { rule_id: selectedRule }
                     },
                     sort: [{ timestamp: { order: 'desc' } }]
-                })
+                }
             })
-                .then((res) => res.json())
-                .then((data) => {
+                .then((res) => {
                     setComments(
-                        data.hits.hits.map((hit: any) => ({
+                        res.hits.hits.map((hit: any) => ({
                             ...hit._source,
                             // Use the stored highlighted_text and description from matched_comments
                             highlighted_text: hit._source.highlighted_text || hit._source.comment_text,
