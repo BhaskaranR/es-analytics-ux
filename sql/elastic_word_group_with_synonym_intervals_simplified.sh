@@ -75,7 +75,53 @@ curl -X PUT "localhost:9200/comment_rules" -H 'Content-Type: application/json' -
   }
 }'
 
-# Step 3: Bulk index percolator rules - 10 RULES PER TOPIC (30 TOTAL)
+# Step 3: Create matched_comments index
+curl -X PUT "https://your-cluster-url:443/matched_comments" \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer your-api-key" \
+-d '{
+  "mappings": {
+    "properties": {
+      "rule_id": {
+        "type": "keyword"
+      },
+      "comment_text": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "topic": {
+        "type": "keyword"
+      },
+      "description": {
+        "type": "text"
+      },
+      "score": {
+        "type": "float"
+      },
+      "matched_terms": {
+        "type": "keyword"
+      },
+      "max_gaps": {
+        "type": "integer"
+      },
+      "ordered": {
+        "type": "boolean"
+      },
+      "highlighted_text": {
+        "type": "text"
+      },
+      "timestamp": {
+        "type": "date"
+      }
+    }
+  }
+}'
+
+# Step 4: Bulk index percolator rules - 10 RULES PER TOPIC (30 TOTAL)
 curl -X POST "localhost:9200/comment_rules/_bulk" -H 'Content-Type: application/x-ndjson' -d '
 {"index":{"_id":"career_1"}}
 {"topic":"Career Development","description":"bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS","query":{"intervals":{"comment_text":{"all_of":{"ordered":false,"intervals":[{"match":{"query":"bacghr_career","analyzer":"search_analyzer","max_gaps":5}},{"match":{"query":"bacghr_opportunity","analyzer":"search_analyzer","max_gaps":5}}]}}}}}

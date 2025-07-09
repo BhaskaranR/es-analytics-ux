@@ -12,54 +12,129 @@ export const getMockRulesForTopic = (topic: string): MockRule[] => {
         case 'career-development':
             return [
                 {
-                    id: 'cd_1',
+                    id: 'career_1',
                     description: 'bacghr_career NEAR bacghr_opportunity WITHIN 5 WORDS',
-                    topic: 'Career Growth Opportunities',
+                    topic: 'Career Development',
                     unique: 45,
-                    total: 1343,
+                    total: 134,
                     excluded: false
                 },
                 {
-                    id: 'cd_2',
+                    id: 'career_2',
                     description: 'bacghr_learning NEAR bacghr_career WITHIN 3 WORDS',
-                    topic: 'Learning and Development',
+                    topic: 'Career Development',
                     unique: 32,
-                    total: 987,
+                    total: 98,
                     excluded: false
                 },
                 {
-                    id: 'cd_3',
-                    description: 'promotion NEAR bacghr_advancement WITHIN 4 WORDS',
-                    topic: 'Promotion and Advancement',
+                    id: 'career_3',
+                    description: 'promotion NEAR career WITHIN 4 WORDS',
+                    topic: 'Career Development',
                     unique: 28,
-                    total: 756,
+                    total: 75,
+                    excluded: false
+                },
+                {
+                    id: 'career_4',
+                    description: 'lack NEAR bacghr_career WITHIN 3 WORDS',
+                    topic: 'Career Development',
+                    unique: 22,
+                    total: 65,
+                    excluded: false
+                },
+                {
+                    id: 'career_5',
+                    description: 'skill NEAR development WITHIN 3 WORDS',
+                    topic: 'Career Development',
+                    unique: 18,
+                    total: 52,
                     excluded: false
                 }
             ];
-        case 'employee-networks':
+        case 'client-support':
             return [
                 {
-                    id: '1',
-                    description: 'employee NEAR network WITHIN 2 WORDS',
-                    topic: 'Employee Networks',
-                    unique: 45,
-                    total: 1343,
+                    id: 'client_1',
+                    description: 'bacghr_client NEAR bacghr_support WITHIN 5 WORDS',
+                    topic: 'Client Support',
+                    unique: 38,
+                    total: 112,
                     excluded: false
                 },
                 {
-                    id: '2',
-                    description: 'jewish NEAR heritage NEAR chapter WITHIN 3 WORDS',
-                    topic: 'Jewish Heritage',
-                    unique: 12,
-                    total: 89,
+                    id: 'client_2',
+                    description: 'client NEAR support WITHIN 5 WORDS',
+                    topic: 'Client Support',
+                    unique: 29,
+                    total: 87,
                     excluded: false
                 },
                 {
-                    id: '3',
-                    description: 'arab NEAR heritage NEAR chapter WITHIN 3 WORDS',
-                    topic: 'Arab Heritage',
-                    unique: 8,
-                    total: 67,
+                    id: 'client_3',
+                    description: 'customer NEAR help WITHIN 4 WORDS',
+                    topic: 'Client Support',
+                    unique: 25,
+                    total: 73,
+                    excluded: false
+                },
+                {
+                    id: 'client_4',
+                    description: 'user NEAR assistance WITHIN 4 WORDS',
+                    topic: 'Client Support',
+                    unique: 21,
+                    total: 58,
+                    excluded: false
+                },
+                {
+                    id: 'client_5',
+                    description: '"end user" NEAR (support OR help OR assistance) WITHIN 5 WORDS',
+                    topic: 'Client Support',
+                    unique: 17,
+                    total: 45,
+                    excluded: false
+                }
+            ];
+        case 'team-collaboration':
+            return [
+                {
+                    id: 'team_1',
+                    description: 'team NEAR collaboration WITHIN 4 WORDS',
+                    topic: 'Team Collaboration',
+                    unique: 42,
+                    total: 128,
+                    excluded: false
+                },
+                {
+                    id: 'team_2',
+                    description: 'team NEAR help WITHIN 3 WORDS',
+                    topic: 'Team Collaboration',
+                    unique: 35,
+                    total: 95,
+                    excluded: false
+                },
+                {
+                    id: 'team_3',
+                    description: 'collaboration NEAR work WITHIN 4 WORDS',
+                    topic: 'Team Collaboration',
+                    unique: 31,
+                    total: 82,
+                    excluded: false
+                },
+                {
+                    id: 'team_4',
+                    description: 'team NEAR communication WITHIN 4 WORDS',
+                    topic: 'Team Collaboration',
+                    unique: 27,
+                    total: 71,
+                    excluded: false
+                },
+                {
+                    id: 'team_5',
+                    description: '"cross functional" NEAR (team OR group) WITHIN 3 WORDS',
+                    topic: 'Team Collaboration',
+                    unique: 23,
+                    total: 59,
                     excluded: false
                 }
             ];
