@@ -40,12 +40,15 @@ export default function TextAnalyticsPage() {
     const [viewMode, setViewMode] = useState<'topic' | 'rule'>('topic'); // 'topic' or 'rule'
     const [topicCounts, setTopicCounts] = useState<{ total: number; unique: number }>({ total: 0, unique: 0 });
     const [isLoadingCounts, setIsLoadingCounts] = useState(false);
+    const [isLoadingTopic, setIsLoadingTopic] = useState(false);
+    const [isLoadingComments, setIsLoadingComments] = useState(false);
 
     const [selectedTopic, setSelectedTopic] = useState<string>('career-development');
 
     // Fetch rules when topic changes
     useEffect(() => {
         const fetchRulesForTopic = async () => {
+            setIsLoadingTopic(true);
             try {
                 const data = await callElasticsearch({
                     endpoint: '/comment_rules/_search',
@@ -91,6 +94,8 @@ export default function TextAnalyticsPage() {
                 const mockRules = getMockRulesForTopic(selectedTopic);
                 setRules(mockRules);
                 if (mockRules.length > 0) setSelectedRule(mockRules[0].id);
+            } finally {
+                setIsLoadingTopic(false);
             }
         };
 
@@ -221,16 +226,24 @@ export default function TextAnalyticsPage() {
 
     // Function to fetch comments for the entire topic
     const fetchCommentsForTopic = async (topic: string) => {
+        setIsLoadingComments(true);
         try {
+            // Map frontend topic names to backend topic names
+            const topicMapping: { [key: string]: string } = {
+                'career-development': 'Career Development',
+                'client-support': 'Client Support',
+                'team-collaboration': 'Team Collaboration'
+            };
+
+            const backendTopic = topicMapping[topic] || topic;
+
             const data = await callElasticsearch({
                 endpoint: '/matched_comments/_search',
                 method: 'POST',
                 body: {
                     size: 100,
                     query: {
-                        bool: {
-                            should: getTopicQueries(topic)
-                        }
+                        term: { topic: backendTopic }
                     },
                     sort: [{ timestamp: { order: 'desc' } }]
                 }
@@ -248,6 +261,8 @@ export default function TextAnalyticsPage() {
             // Fallback to mock data if API fails
             const mockTopicComments = getMockCommentsForTopic(topic);
             setComments(mockTopicComments);
+        } finally {
+            setIsLoadingComments(false);
         }
     };
 
@@ -364,6 +379,12 @@ export default function TextAnalyticsPage() {
                                     <SelectItem value='team-collaboration'>Team Collaboration</SelectItem>
                                 </SelectContent>
                             </Select>
+                            {isLoadingTopic && (
+                                <div className='ml-2 flex items-center gap-2 text-sm text-blue-600'>
+                                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
+                                    <span>Loading...</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Search */}
@@ -496,37 +517,58 @@ export default function TextAnalyticsPage() {
                                         </CardHeader>
                                         <ScrollArea className='h-[calc(100vh-300px)]'>
                                             <CardContent className='space-y-4 pr-4'>
-                                                {comments.map((comment, idx) => (
-                                                    <div key={idx} className='text-sm'>
-                                                        <p
-                                                            className='leading-relaxed text-gray-700'
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: comment.highlighted_text || comment.comment_text
-                                                            }}
-                                                        />
-                                                        <div className='mt-2 mb-2 text-right'>
-                                                            <span className='text-xs font-medium'>
-                                                                Should be captured?
-                                                            </span>
-                                                            <div className='mt-1 flex justify-end gap-2'>
-                                                                <Button variant='outline' size='sm' className='text-xs'>
-                                                                    Yes
-                                                                </Button>
-                                                                <Button variant='outline' size='sm' className='text-xs'>
-                                                                    No
-                                                                </Button>
-                                                            </div>
+                                                {isLoadingComments ? (
+                                                    <div className='flex items-center justify-center py-8'>
+                                                        <div className='flex items-center gap-2 text-blue-600'>
+                                                            <div className='h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
+                                                            <span>Loading comments...</span>
                                                         </div>
-                                                        {idx < comments.length - 1 && <Separator className='my-4' />}
                                                     </div>
-                                                ))}
+                                                ) : (
+                                                    <>
+                                                        {comments.map((comment, idx) => (
+                                                            <div key={idx} className='text-sm'>
+                                                                <p
+                                                                    className='leading-relaxed text-gray-700'
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html:
+                                                                            comment.highlighted_text ||
+                                                                            comment.comment_text
+                                                                    }}
+                                                                />
+                                                                <div className='mt-2 mb-2 text-right'>
+                                                                    <span className='text-xs font-medium'>
+                                                                        Should be captured?
+                                                                    </span>
+                                                                    <div className='mt-1 flex justify-end gap-2'>
+                                                                        <Button
+                                                                            variant='outline'
+                                                                            size='sm'
+                                                                            className='text-xs'>
+                                                                            Yes
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant='outline'
+                                                                            size='sm'
+                                                                            className='text-xs'>
+                                                                            No
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                                {idx < comments.length - 1 && (
+                                                                    <Separator className='my-4' />
+                                                                )}
+                                                            </div>
+                                                        ))}
 
-                                                {comments.length === 0 && (
-                                                    <div className='py-8 text-center text-gray-500'>
-                                                        {viewMode === 'topic'
-                                                            ? `No comments found for ${selectedTopic.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase())} topic.`
-                                                            : 'No comments found for this rule.'}
-                                                    </div>
+                                                        {comments.length === 0 && (
+                                                            <div className='py-8 text-center text-gray-500'>
+                                                                {viewMode === 'topic'
+                                                                    ? `No comments found for ${selectedTopic.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase())} topic.`
+                                                                    : 'No comments found for this rule.'}
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 )}
                                             </CardContent>
                                         </ScrollArea>
