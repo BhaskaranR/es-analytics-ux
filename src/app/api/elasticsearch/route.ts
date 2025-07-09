@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import https from 'https';
+
 const ELASTICSEARCH_HOST = process.env.ELASTICSEARCH_HOST || 'localhost:9200';
 const ELASTICSEARCH_USERNAME = process.env.ELASTICSEARCH_USERNAME || '';
 const ELASTICSEARCH_PASSWORD = process.env.ELASTICSEARCH_PASSWORD || '';
 const ELASTICSEARCH_API_KEY = process.env.ELASTICSEARCH_API_KEY || '';
+const NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORIZED || '1';
+
+// Create HTTPS agent that ignores SSL certificate issues for development
+const httpsAgent = new https.Agent({
+    rejectUnauthorized: NODE_TLS_REJECT_UNAUTHORIZED === '0'
+});
 
 export async function POST(request: NextRequest) {
     try {
@@ -33,7 +41,10 @@ export async function POST(request: NextRequest) {
         const esResponse = await fetch(url, {
             method,
             headers,
-            body: body ? JSON.stringify(body) : undefined
+            body: body ? JSON.stringify(body) : undefined,
+            // Use HTTPS agent for self-signed certificates in development
+            // @ts-ignore - Node.js specific option
+            agent: url.startsWith('https://') ? httpsAgent : undefined
         });
         const data = await esResponse.json();
 
