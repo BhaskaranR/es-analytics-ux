@@ -13,6 +13,7 @@ import { Separator } from '@/registry/new-york-v4/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/registry/new-york-v4/ui/tabs';
 
 import { getMockCommentsByRule, getMockCommentsForTopic, getMockRulesForTopic } from '../../_mock';
+import { RulesBuilderModal } from './RulesBuilderModal';
 import { Copy, Edit, Trash2, X } from 'lucide-react';
 
 interface Rule {
@@ -44,8 +45,9 @@ export default function TextAnalyticsPage() {
     const [isLoadingComments, setIsLoadingComments] = useState(false);
 
     const [selectedTopic, setSelectedTopic] = useState<string>('career-development');
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    // Fetch rules when topic changes
+    // Fetch rules when topic changes or refresh is triggered
     useEffect(() => {
         const fetchRulesForTopic = async () => {
             setIsLoadingTopic(true);
@@ -114,7 +116,7 @@ export default function TextAnalyticsPage() {
             }
         };
         fetchCounts();
-    }, [selectedTopic]);
+    }, [selectedTopic, refreshTrigger]);
 
     // Function to get topic-specific queries
     const getTopicQueries = (topic: string) => {
@@ -366,25 +368,35 @@ export default function TextAnalyticsPage() {
                 <div className='w-3/5 border-r bg-white'>
                     <div className='p-6'>
                         {/* Topic Rules Header */}
-                        <div className='mb-6 flex items-center gap-4'>
-                            <span className='font-medium'>Topics rules for</span>
+                        <div className='mb-6 flex items-center justify-between'>
+                            <div className='flex items-center gap-4'>
+                                <span className='font-medium'>Topics rules for</span>
 
-                            <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-                                <SelectTrigger className='w-100'>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value='career-development'>Career Development</SelectItem>
-                                    <SelectItem value='client-support'>Client Support</SelectItem>
-                                    <SelectItem value='team-collaboration'>Team Collaboration</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {isLoadingTopic && (
-                                <div className='ml-2 flex items-center gap-2 text-sm text-blue-600'>
-                                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
-                                    <span>Loading...</span>
-                                </div>
-                            )}
+                                <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                                    <SelectTrigger className='w-100'>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value='career-development'>Career Development</SelectItem>
+                                        <SelectItem value='client-support'>Client Support</SelectItem>
+                                        <SelectItem value='team-collaboration'>Team Collaboration</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {isLoadingTopic && (
+                                    <div className='ml-2 flex items-center gap-2 text-sm text-blue-600'>
+                                        <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
+                                        <span>Loading...</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <RulesBuilderModal
+                                onRuleCreated={(rule) => {
+                                    // Refresh the rules list after creating a new rule
+                                    console.log('New rule created:', rule);
+                                    setRefreshTrigger((prev) => prev + 1);
+                                }}
+                            />
                         </div>
 
                         {/* Search */}

@@ -1,157 +1,156 @@
-# Next.js 15 Starter (shadcn) [[LIVE DEMO](https://nextjs-15-starter-shadcn.vercel.app/)]
+# ES Analytics UX
 
-![MIT License](https://img.shields.io/badge/license-MIT-blue) [![TypeScript](https://badgen.net/badge/icon/typescript?icon=typescript&label)](https://typescriptlang.org) ![ESLint](https://img.shields.io/badge/code%20style-eslint-brightgreen) ![GitHub stars](https://img.shields.io/github/stars/siddharthamaity/nextjs-15-starter-shadcn?style=social) ![GitHub forks](https://img.shields.io/github/forks/siddharthamaity/nextjs-15-starter-shadcn?style=social) [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/siddharthamaity)
+A Next.js application for Elasticsearch analytics with a modern UI built using shadcn/ui components.
 
-*This is the Tailwind version for Next.js 15 Starter, you may be interested in other templates too -*
-- [**Next.js 15 Starter Core**](https://github.com/SiddharthaMaity/nextjs-15-starter-core)
-- [**Next.js 15 Starter with Tailwind CSS**](https://github.com/SiddharthaMaity/nextjs-15-starter-tailwind)
+## Features
 
-Welcome to the **Next.js 15 Starter** repository! This starter template is built with Next.js 15, React 19, TypeScript 5, Tailwind CSS 3, Shadcn UI and comes packed with several powerful tools and configurations to accelerate your project setup and streamline development workflows using VS Code.
+- **Text Analytics**: Analyze comments and feedback using Elasticsearch
+- **Comment Rules Builder**: Dynamically create and manage Elasticsearch percolator rules
+- **Real-time Search**: Search through comments with advanced filtering
+- **Modern UI**: Built with shadcn/ui components and Tailwind CSS
 
-![Next.js 15 Starter Shadcn](public/images/screenshot1.png)
-
-![Next.js 15 Starter Shadcn](public/images/screenshot2.png)
-
-## 🚀 What's Included
-
-- **Next.js 15**
-- **React 19**
-- **TypeScript 5**
-- **ESLint 9**
-- **Prettier 3**
-- **Tailwind CSS 4**
-- **Shadcn UI**
-- **App Directory**
-- **System, Light & Dark Mode**
-- **Next.js Bundle Analyzer**
-- **Dockerfile** with Node.js 22.16.0 (Alpine)
-- **Dockerfile.bun** with Bun 1.2.17 (Alpine)
-
-### 🛠️ ESLint Plugins
-
-- [**@eslint/js**](https://www.npmjs.com/package/@eslint/js)
-- [**typescript-eslint**](https://github.com/typescript-eslint/typescript-eslint)
-- [**eslint-plugin-react**](https://github.com/jsx-eslint/eslint-plugin-react)
-- [**@next/eslint-plugin-next**](https://github.com/vercel/next.js)
-- [**eslint-config-prettier**](eslint-config-prettier)
-- [**eslint-plugin-tailwindcss**](https://github.com/francoismassart/eslint-plugin-tailwindcss)
-- [**eslint-plugin-import**](https://github.com/import-js/eslint-plugin-import)
-- [**eslint-plugin-promise**](https://github.com/eslint-community/eslint-plugin-promise)
-
-### ✨ Prettier Plugins
-
-- [**@trivago/prettier-plugin-sort-imports**](https://github.com/trivago/prettier-plugin-sort-imports)
-- [**prettier-plugin-tailwindcss**](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)
-
-### 💻 VS Code Extensions (Recommended)
-
-To enhance development experience, install the following VS Code extensions:
-
-- [**Auto Close Tag**](https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-close-tag)
-- [**Better Comments**](https://marketplace.visualstudio.com/items?itemName=aaron-bond.better-comments)
-- [**DotENV**](https://marketplace.visualstudio.com/items?itemName=mikestead.dotenv)
-- [**EditorConfig for VS Code**](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
-- [**ESLint**](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-- [**formate: CSS/LESS/SCSS formatter**](https://marketplace.visualstudio.com/items?itemName=MikeBovenlander.formate)
-- [**Git History**](https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory)
-- [**Import Cost**](https://marketplace.visualstudio.com/items?itemName=wix.vscode-import-cost)
-- [**JavaScript Booster**](https://marketplace.visualstudio.com/items?itemName=sburg.vscode-javascript-booster)
-- [**npm Intellisense**](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense)
-- [**Prettier - Code formatter**](https://marketplace.visualstudio.com/items?itemName=esbenp)
-- [**Todo Tree**](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)
-- [**Turbo Console Log**](https://marketplace.visualstudio.com/items?itemName=ChakrounAnas.turbo-console-log)
-- [**Package Json Upgrade**](https://marketplace.visualstudio.com/items?itemName=codeandstuff.package-json-upgrade)
-- [**Visual Studio Code Commitizen Support**](https://marketplace.visualstudio.com/items?itemName=KnisterPeter.vscode-commitizen)
-- [**Markdown All in One**](https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one)
-
-
-## 🏁 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- **Bun**: Version 1.2.17 or higher OR
-- **Node.js**: Version 20.18.0 or higher
-- **Docker**: For containerized deployment (optional but recommended)
+- Node.js 18+
+- Elasticsearch instance running
+- Environment variables configured
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```bash
+# Elasticsearch Configuration
+ELASTICSEARCH_URL=https://localhost:9200
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=your_password
+
+# Development SSL Settings
+NODE_TLS_REJECT_UNAUTHORIZED=false  # Only for development
+```
 
 ### Installation
 
-1. **Clone the Repository**:
-    ```bash
-    git clone https://github.com/siddharthamaity/nextjs-15-starter-shadcn.git
-    cd nextjs-15-starter-shadcn
-    ```
-    To get the code without example change branch to without-example
-    ```bash
-    git checkout without-example
-    ```
-
-2. **Install Dependencies**:
-    ```bash
-    npm install
-    # or with Yarn
-    yarn install
-    # or with pnpm
-    pnpm install
-    # or with Bun
-    bun install
-    ```
-
-3. **Run Development Server**:
-    ```bash
-    npm run dev
-    # or with Yarn
-    yarn dev
-    # or with pnpm
-    pnpm dev
-    # or with Bun
-    bun dev
-    ```
-
-4. **Build for Production**:
-    ```bash
-    npm run build
-    # or with Yarn
-    yarn build
-    # or with pnpm
-    pnpm build
-    # or with Bun
-    bun run build
-    ```
-
-### 🐳 Docker Setup
-
-To use Docker, make sure Docker is installed on your machine. Then, build and run the Docker container:
+1. Install dependencies:
 
 ```bash
-docker build . -t nextjs-starter-shadcn
-# or if using Bun
-docker build . -t nextjs-starter-shadcn -f Dockerfile.bun
-
-docker run -p 3000:3000 nextjs-starter-shadcn
+npm install
 ```
 
-### ☁ Try it in the Cloud
+2. Run the development server:
 
-[![Open in VS Code](https://img.shields.io/badge/Open%20in-VS%20Code-blue?logo=visualstudiocode)](https://vscode.dev/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+```bash
+npm run dev
+```
 
-[![Open in GitHub Codespaces](https://img.shields.io/badge/Open%20in-GitHub%20Codespaces-blue?logo=github)](https://codespaces.new/SiddharthaMaity/nextjs-15-starter-shadcn)
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-[![Open in CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+## Features
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/SiddharthaMaity/nextjs-15-starter-shadcn)
+### Text Analytics
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz_small.svg)](https://stackblitz.com/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+- Analyze comments by topic
+- View comment counts and rules
+- Search through matched comments
+- Real-time filtering and search
 
-[![Open in Repl.it](https://replit.com/badge/github/SiddharthaMaity/nextjs-15-starter-shadcn)](https://replit.com/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+### Rules Builder
 
-[![Open in Glitch](https://img.shields.io/badge/Open%20in-Glitch-blue?logo=glitch)](https://glitch.com/edit/#!/import/github/SiddharthaMaity/nextjs-15-starter-shadcn)
+The Rules Builder allows you to dynamically create Elasticsearch percolator rules:
 
-[![Open in Codeanywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](https://app.codeanywhere.com/#https://github.com/SiddharthaMaity/nextjs-15-starter-shadcn)
+- **Intervals Queries**: Create proximity-based searches
+- **Match Queries**: Simple term matching
+- **Multi-Match Queries**: Search across multiple fields
+- **Boolean Queries**: Complex logical combinations
 
-### License
+#### Supported Query Types
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+1. **Intervals Query**: Find terms within a specified distance
+   - Example: "career NEAR development WITHIN 5 WORDS"
 
----
+2. **Match Query**: Simple text matching
+   - Example: "client support"
 
-<p style="text-align: center;"> With ❤️ from 🇮🇳 </p>
+3. **Multi-Match Query**: Search across multiple fields
+   - Example: Search in both title and content
+
+4. **Boolean Query**: Complex logical operations
+   - Example: MUST contain "career" AND SHOULD contain "development"
+
+#### Usage
+
+1. Navigate to the Rules Builder page
+2. Select a query type
+3. Configure the parameters
+4. Preview the generated Elasticsearch query
+5. Save the rule to your Elasticsearch instance
+
+### API Endpoints
+
+- `GET /api/elasticsearch` - Search comments and rules
+- `POST /api/elasticsearch/rules` - Create new rules
+- `GET /api/elasticsearch/rules` - Fetch existing rules
+- `DELETE /api/elasticsearch/rules?id=<rule_id>` - Delete rules
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── components/
+│   │   ├── CommentRulesBuilder.tsx    # Rules builder component
+│   │   ├── TextAnalyticsPage.tsx      # Main analytics page
+│   │   └── NavigationLinks.tsx        # Navigation component
+│   ├── api/
+│   │   └── elasticsearch/
+│   │       ├── route.ts               # Main ES API
+│   │       └── rules/route.ts         # Rules management API
+│   ├── rules-builder/
+│   │   └── page.tsx                   # Rules builder page
+│   └── page.tsx                       # Home page
+└── components/                        # shadcn/ui components
+```
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues
+- `npm run format` - Format code with Prettier
+
+### Adding New Components
+
+This project uses shadcn/ui for components. To add new components:
+
+```bash
+npx shadcn@latest add <component-name>
+```
+
+## Elasticsearch Setup
+
+### Required Indices
+
+1. **comment_rules**: Stores percolator rules
+2. **matched_comments**: Stores matched comments with rule IDs
+
+### Index Mappings
+
+The application expects specific field mappings in your Elasticsearch indices. Refer to the SQL scripts in the `sql/` directory for setup examples.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.

@@ -5,7 +5,9 @@ import { usePathname } from 'next/navigation';
 
 const NAVIGATION_LINKS = [
     { href: '/', label: 'Home' },
-    { href: '/examples', label: 'New Comment' }
+    { href: '/examples', label: 'New Comment' },
+    { href: '/rules-builder', label: 'Rules Builder' },
+    { href: '/reverse-percolator', label: 'Reverse Percolator' }
 ];
 
 const NavigationLinks = () => {
