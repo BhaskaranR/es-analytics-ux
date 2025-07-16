@@ -1,5 +1,4 @@
-import { ApiResponse, ApiSuccessResponse } from '@/types/api';
-
+import { ApiResponse, ApiSuccessResponse } from '../types/api';
 import { ApiErrorResponse, Result, err, ok } from './error';
 import { wrapThrowsAsync } from './utils';
 
@@ -48,3 +47,56 @@ export const makeRequest = async <T>(
 
     return ok(successResponse.data);
 };
+
+// Simple API client using fetch
+export class ApiClient {
+    private appUrl: string;
+    private environmentId: string;
+    private isDebug: boolean;
+
+    constructor({
+        appUrl,
+        environmentId,
+        isDebug = false
+    }: {
+        appUrl: string;
+        environmentId: string;
+        isDebug: boolean;
+    }) {
+        this.appUrl = appUrl;
+        this.environmentId = environmentId;
+        this.isDebug = isDebug;
+    }
+
+    async createOrUpdateUser(userUpdateInput: {
+        userId: string;
+        attributes?: Record<string, string>;
+    }): Promise<Result<CreateOrUpdateUserResponse, ApiErrorResponse>> {
+        // transform all attributes to string if attributes are present into a new attributes copy
+        const attributes: Record<string, string> = {};
+        for (const key in userUpdateInput.attributes) {
+            attributes[key] = String(userUpdateInput.attributes[key]);
+        }
+
+        return makeRequest(
+            this.appUrl,
+            `/api/v2/client/${this.environmentId}/user`,
+            'POST',
+            {
+                userId: userUpdateInput.userId,
+                attributes
+            },
+            this.isDebug
+        );
+    }
+
+    async getEnvironmentState(): Promise<Result<TEnvironmentState, ApiErrorResponse>> {
+        return makeRequest(
+            this.appUrl,
+            `/api/v1/client/${this.environmentId}/environment`,
+            'GET',
+            undefined,
+            this.isDebug
+        );
+    }
+}
