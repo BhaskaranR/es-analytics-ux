@@ -1,6 +1,18 @@
 import { ApiResponse, ApiSuccessResponse } from '../types/api';
 import { ApiErrorResponse, Result, err, ok } from './error';
 import { wrapThrowsAsync } from './utils';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+
+// Define the missing types
+interface CreateOrUpdateUserResponse {
+    userId: string;
+    attributes?: Record<string, string>;
+}
+
+interface TEnvironmentState {
+    environmentId: string;
+    // Add other properties as needed based on your API response
+}
 
 export const makeRequest = async <T>(
     appUrl: string,
@@ -10,15 +22,18 @@ export const makeRequest = async <T>(
     isDebug = false
 ): Promise<Result<T, ApiErrorResponse>> => {
     const url = new URL(appUrl + endpoint);
-    const body = data ? JSON.stringify(data) : undefined;
-    const res = await wrapThrowsAsync(fetch)(url.toString(), {
+
+    const config: AxiosRequestConfig = {
         method,
+        url: url.toString(),
         headers: {
             'Content-Type': 'application/json',
             ...(isDebug && { 'Cache-Control': 'no-cache' })
         },
-        body
-    });
+        ...(data ? { data } : {})
+    };
+
+    const res = await wrapThrowsAsync(axios)(config);
 
     if (!res.ok) {
         return err({
@@ -28,10 +43,10 @@ export const makeRequest = async <T>(
         });
     }
 
-    const response = res.data;
-    const json = (await response.json()) as ApiResponse;
+    const response: AxiosResponse = res.data;
+    const json = response.data as ApiResponse;
 
-    if (!response.ok) {
+    if (response.status >= 400) {
         const errorResponse = json as ApiErrorResponse;
 
         return err({
