@@ -157,19 +157,24 @@ curl -X POST "localhost:9200/comment_rules/_bulk" -H 'Content-Type: application/
 {"topic":"Learning Opportunities","description":"bacghr_learning NEAR bacghr_opportunity WITHIN 4 WORDS","query":{"intervals":{"comment_text":{"all_of":{"ordered":false,"intervals":[{"match":{"query":"bacghr_learning","analyzer":"search_analyzer","max_gaps":4}},{"match":{"query":"bacghr_opportunity","analyzer":"search_analyzer","max_gaps":4}}]}}}}}
 {"index":{"_id":"cd_15"}}
 {"topic":"Career Development Feedback","description":"bacghr_career NEAR feedback WITHIN 5 WORDS","query":{"intervals":{"comment_text":{"all_of":{"ordered":false,"intervals":[{"match":{"query":"bacghr_career","analyzer":"search_analyzer","max_gaps":5}},{"match":{"query":"feedback","analyzer":"search_analyzer","max_gaps":5}}]}}}}}
-# Use case: Detect when a client (or its synonyms) gives feedback, with the client mention preceding feedback within 4 words.
+# Ordered (PRECEDES, synonym):
+# bacghr_client PRECEDES feedback WITHIN 4 WORDS
 {"index":{"_id":"cd_21"}}
 {"topic":"Client Experience Sequence","description":"bacghr_client PRECEDES feedback WITHIN 4 WORDS","query":{"intervals":{"comment_text":{"all_of":{"ordered":true,"intervals":[{"match":{"query":"bacghr_client","analyzer":"search_analyzer","max_gaps":4}},{"match":{"query":"feedback","analyzer":"search_analyzer","max_gaps":4}}]}}}}}
-# Use case: Identify when teamwork is mentioned in sequence, with team (or its synonyms) preceding collaboration within 3 words.
+# Ordered (PRECEDES, synonym):
+# bacghr_team PRECEDES collaboration WITHIN 3 WORDS
 {"index":{"_id":"cd_22"}}
 {"topic":"Teamwork Sequence","description":"bacghr_team PRECEDES collaboration WITHIN 3 WORDS","query":{"intervals":{"comment_text":{"all_of":{"ordered":true,"intervals":[{"match":{"query":"bacghr_team","analyzer":"search_analyzer","max_gaps":3}},{"match":{"query":"collaboration","analyzer":"search_analyzer","max_gaps":3}}]}}}}}
-# Use case: Flag comments that mention either learning (or its synonyms) or training within 5 words, for training/learning analytics.
+# any_of (OR, synonym):
+# bacghr_learning OR training WITHIN 5 WORDS
 {"index":{"_id":"cd_23"}}
 {"topic":"Learning or Training Mention","description":"bacghr_learning OR training WITHIN 5 WORDS","query":{"intervals":{"comment_text":{"any_of":{"intervals":[{"match":{"query":"bacghr_learning","analyzer":"search_analyzer","max_gaps":5}},{"match":{"query":"training","analyzer":"search_analyzer","max_gaps":5}}]}}}}}
-# Use case: Detect advancement or promotion mentions (including synonyms) within 5 words, for career progression analytics.
+# any_of (OR, synonym):
+# bacghr_advancement OR promotion WITHIN 5 WORDS
 {"index":{"_id":"cd_24"}}
 {"topic":"Advancement or Promotion","description":"bacghr_advancement OR promotion WITHIN 5 WORDS","query":{"intervals":{"comment_text":{"any_of":{"intervals":[{"match":{"query":"bacghr_advancement","analyzer":"search_analyzer","max_gaps":5}},{"match":{"query":"promotion","analyzer":"search_analyzer","max_gaps":5}}]}}}}}
-# Use case: Find comments where support (or its synonyms) and help are both present within 5 words, regardless of order, for support/help analytics.
+# all_of (unordered, synonym):
+# bacghr_support AND help WITHIN 5 WORDS (ANY ORDER)
 {"index":{"_id":"cd_25"}}
 {"topic":"Support and Help (unordered)","description":"bacghr_support AND help WITHIN 5 WORDS (ANY ORDER)","query":{"intervals":{"comment_text":{"all_of":{"ordered":false,"intervals":[{"match":{"query":"bacghr_support","analyzer":"search_analyzer","max_gaps":5}},{"match":{"query":"help","analyzer":"search_analyzer","max_gaps":5}}]}}}}}
 '
