@@ -45,31 +45,152 @@ export function SetupForm() {
     }
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
-                <div className='flex items-end justify-between gap-4'>
-                    <AvatarUpload userId={user?.id ?? ''} avatarUrl={user?.avatarUrl} size={80} ref={uploadRef} />
-                </div>
-
-                <FormField
-                    control={form.control}
-                    name='fullName'
-                    render={({ field }) => (
+        import React from "react";
+        import { useForm } from "react-hook-form";
+        import { Row, Col } from "react-bootstrap";
+        import {
+          Form,
+          FormField,
+          FormItem,
+          FormLabel,
+          FormControl,
+          FormDescription,
+          FormMessage,
+        } from "path-to-your-form-component"; // <-- update this import path
+        
+        type FormValues = {
+          starterTemplate: string;
+          programName: string;
+          programDescription: string;
+          programStatus: boolean;
+        };
+        
+        export default function ProgramForm() {
+          const { control, handleSubmit } = useForm<FormValues>({
+            defaultValues: {
+              starterTemplate: "",
+              programName: "",
+              programDescription: "",
+              programStatus: false,
+            },
+          });
+        
+          const onSubmit = (data: FormValues) => {
+            console.log(data);
+          };
+        
+          return (
+            <Form onSubmit={handleSubmit(onSubmit)}>
+              <Form.Group>
+                <Row>
+                  <Col md={3} className="mb-3 mb-md-0">
+                    <FormField
+                      name="starterTemplate"
+                      control={control}
+                      render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Full name</FormLabel>
-                            <FormControl>
-                                <Input placeholder='John Doe' {...field} />
-                            </FormControl>
-                            <FormDescription>This is your first and last name.</FormDescription>
-                            <FormMessage />
+                          <FormLabel>Program starter template</FormLabel>
+                          <FormControl
+                            as="select"
+                            {...field}
+                            aria-describedby="FeedbackProgramStarterTemplate"
+                          >
+                            <option value="" disabled>
+                              Select template
+                            </option>
+                            <option value="option1">Program Template 1</option>
+                            <option value="option2">Program Template 2</option>
+                            <option value="option3">Program Template 3</option>
+                          </FormControl>
+                          <FormDescription id="FeedbackProgramStarterTemplate">
+                            Choose a pre-defined template
+                          </FormDescription>
+                          <FormMessage />
                         </FormItem>
-                    )}
-                />
-
-                <SubmitButton type='submit' className='w-full' isSubmitting={updateUserMutation.isPending}>
-                    Save
-                </SubmitButton>
-            </form>
-        </Form>
+                      )}
+                    />
+                  </Col>
+        
+                  <Col md={3} className="mb-3 mb-md-0">
+                    <FormField
+                      name="programName"
+                      control={control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Program name</FormLabel>
+                          <FormControl
+                            {...field}
+                            placeholder="Enter program name"
+                            type="text"
+                            aria-describedby="FeedbackProgramName"
+                            required
+                          />
+                          <FormDescription id="FeedbackProgramName">
+                            Create a name for the program
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </Col>
+                </Row>
+              </Form.Group>
+        
+              <Form.Group>
+                <Row>
+                  <Col md={10}>
+                    <FormField
+                      name="programDescription"
+                      control={control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Program description</FormLabel>
+                          <FormControl
+                            {...field}
+                            placeholder="Enter program description"
+                            type="text"
+                            aria-describedby="FeedbackProgramDescription"
+                          />
+                          <FormDescription id="FeedbackProgramDescription">
+                            Add description for the program
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </Col>
+        
+                  <Col md={2}>
+                    <FormField
+                      name="programStatus"
+                      control={control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Program status</FormLabel>
+                          <FormControl
+                            as="input"
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={e => field.onChange(e.target.checked)}
+                            id="ToggleProgramStatus"
+                            aria-describedby="FeedbackProgramStatus"
+                          />
+                          <FormDescription id="FeedbackProgramStatus">
+                            Toggle program status
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </Col>
+                </Row>
+              </Form.Group>
+        
+              <button type="submit" className="btn btn-primary">
+                Submit
+              </button>
+            </Form>
+          );
+        }
     );
 }
