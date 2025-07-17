@@ -1,7 +1,7 @@
 import { ApiResponse, ApiSuccessResponse } from '../types/api';
 import { ApiErrorResponse, Result, err, ok } from './error';
 import { wrapThrowsAsync } from './utils';
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Define the missing types
 interface CreateOrUpdateUserResponse {
@@ -14,14 +14,98 @@ interface TEnvironmentState {
     // Add other properties as needed based on your API response
 }
 
-export const makeRequest = async <T>(
-    appUrl: string,
-    endpoint: string,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-    data?: unknown,
-    isDebug = false
-): Promise<Result<T, ApiErrorResponse>> => {
-    const url = new URL(appUrl + endpoint);
+// Create axios instance with interceptors
+const createAxiosInstance = (authToken?: string): AxiosInstance => {
+    const instance = axios.create();
+
+    // Request interceptor to add authorization header
+    instance.interceptors.request.use(
+        (config: any) => {
+            if (authToken) {
+                config.headers.Authorization = `Bearer ${authToken}`;
+            }
+
+            return config;
+        },
+        (error: any) => {
+            return Promise.reject(error);
+        }
+    );
+
+    return instance;
+};
+
+interface RequestOptions {
+    endpoint: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    data?: unknown;
+    isDebug?: boolean;
+    authToken?: string;
+    appUrl?: string;
+}
+
+/**
+ * Usage examples:
+ *
+ * // Simple GET request
+ * const result = await makeRequest<User[]>({
+ *   endpoint: '/api/users',
+ *   method: 'GET'
+ * });
+ *
+ * // POST with data
+ * const result = await makeRequest<Comment>({
+ *   endpoint: '/api/comments',
+ *   method: 'POST',
+ *   data: { text: 'Hello world' }
+ * });
+ *
+ * // With auth token
+ * const result = await makeRequest<User>({
+ *   endpoint: '/api/profile',
+ *   method: 'GET',
+ *   authToken: 'your-jwt-token'
+ * });
+ *
+ * // With custom URL
+ * const result = await makeRequest<User[]>({
+ *   endpoint: '/api/users',
+ *   method: 'GET',
+ *   appUrl: 'https://api.example.com'
+ * });
+ *
+ * // With debug mode
+ * const result = await makeRequest<User[]>({
+ *   endpoint: '/api/users',
+ *   method: 'GET',
+ *   isDebug: true
+ * });
+ *
+ * // In useEffect
+ * useEffect(() => {
+ *   const fetchUsers = async () => {
+ *     const result = await makeRequest<User[]>({
+ *       endpoint: '/api/users',
+ *       method: 'GET',
+ *       authToken: 'your-token'
+ *     });
+ *
+ *     if (result.ok) {
+ *       setUsers(result.data);
+ *     } else {
+ *       console.error('Error:', result.error);
+ *     }
+ *   };
+ *
+ *   fetchUsers();
+ * }, []);
+ */
+
+export const makeRequest = async <T>(options: RequestOptions): Promise<Result<T, ApiErrorResponse>> => {
+    const { endpoint, method, data, isDebug = false, authToken, appUrl } = options;
+    const baseUrl = appUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const url = new URL(endpoint, baseUrl);
+    const axiosInstance = createAxiosInstance(authToken);
 
     const config: AxiosRequestConfig = {
         method,
@@ -33,7 +117,7 @@ export const makeRequest = async <T>(
         ...(data ? { data } : {})
     };
 
-    const res = await wrapThrowsAsync(axios)(config);
+    const res = await wrapThrowsAsync(axiosInstance)(config);
 
     if (!res.ok) {
         return err({
@@ -62,56 +146,3 @@ export const makeRequest = async <T>(
 
     return ok(successResponse.data);
 };
-
-// Simple API client using fetch
-export class ApiClient {
-    private appUrl: string;
-    private environmentId: string;
-    private isDebug: boolean;
-
-    constructor({
-        appUrl,
-        environmentId,
-        isDebug = false
-    }: {
-        appUrl: string;
-        environmentId: string;
-        isDebug: boolean;
-    }) {
-        this.appUrl = appUrl;
-        this.environmentId = environmentId;
-        this.isDebug = isDebug;
-    }
-
-    async createOrUpdateUser(userUpdateInput: {
-        userId: string;
-        attributes?: Record<string, string>;
-    }): Promise<Result<CreateOrUpdateUserResponse, ApiErrorResponse>> {
-        // transform all attributes to string if attributes are present into a new attributes copy
-        const attributes: Record<string, string> = {};
-        for (const key in userUpdateInput.attributes) {
-            attributes[key] = String(userUpdateInput.attributes[key]);
-        }
-
-        return makeRequest(
-            this.appUrl,
-            `/api/v2/client/${this.environmentId}/user`,
-            'POST',
-            {
-                userId: userUpdateInput.userId,
-                attributes
-            },
-            this.isDebug
-        );
-    }
-
-    async getEnvironmentState(): Promise<Result<TEnvironmentState, ApiErrorResponse>> {
-        return makeRequest(
-            this.appUrl,
-            `/api/v1/client/${this.environmentId}/environment`,
-            'GET',
-            undefined,
-            this.isDebug
-        );
-    }
-}
