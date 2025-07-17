@@ -65,6 +65,26 @@ export function SetupForm() {
           programStatus: boolean;
         };
         
+        import React from "react";
+        import { useForm } from "react-hook-form";
+        import { Row, Col } from "react-bootstrap";
+        import {
+          Form,
+          FormField,
+          FormItem,
+          FormLabel,
+          FormControl,
+          FormDescription,
+          FormMessage,
+        } from "path-to-your-form-component"; // <-- update this import path
+        
+        type FormValues = {
+          starterTemplate: string;
+          programName: string;
+          programDescription: string;
+          programStatus: boolean;
+        };
+        
         export default function ProgramForm() {
           const { control, handleSubmit } = useForm<FormValues>({
             defaultValues: {
