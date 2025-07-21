@@ -22,9 +22,12 @@ const ProgramsPage = () => {
                     />
                 </Col>
                 <Col xs='auto'>
-                    <Button variant='primary' onClick={() => alert('Add program clicked')}>
-                        + Add program
-                    </Button>
+                    <div className='d-flex align-items-center gap-3'>
+                        <div style={{ width: '1px', height: '24px', backgroundColor: '#ccc' }} />
+                        <Button variant='primary' onClick={() => alert('Add program clicked')}>
+                            + Add program
+                        </Button>
+                    </div>
                 </Col>
             </Row>
 
