@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -6,28 +6,55 @@ import { AgGridReact } from 'ag-grid-react';
 
 const ActionMenu = ({ onClone, onDelete }) => {
     const [open, setOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     return (
-        <div style={{ position: 'relative' }}>
-            <button onClick={() => setOpen((prev) => !prev)}>⋮</button>
+        <div style={{ position: 'relative', display: 'inline-block' }} ref={menuRef}>
+            <button
+                onClick={() => setOpen(!open)}
+                style={{
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    padding: 4
+                }}>
+                <i className='hlx hlx-control-menu-overflow' />
+            </button>
+
             {open && (
                 <div
                     style={{
                         position: 'absolute',
                         top: '100%',
                         right: 0,
-                        background: 'white',
+                        background: '#fff',
                         border: '1px solid #ccc',
                         borderRadius: 4,
-                        boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
-                        zIndex: 10
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                        zIndex: 10,
+                        minWidth: 100
                     }}>
                     <div
                         onClick={() => {
                             onClone();
                             setOpen(false);
                         }}
-                        style={{ padding: '8px 12px', cursor: 'pointer' }}>
+                        style={{
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #eee'
+                        }}>
                         Clone
                     </div>
                     <div
@@ -71,9 +98,7 @@ const CyclesGrid = () => {
             {
                 headerName: 'Cycle name',
                 field: 'cycleName',
-                cellRenderer: (params) => (
-                    <a href='#'>{params.value}</a> // Replace with routing/navigation if needed
-                )
+                cellRenderer: (params) => <a href='#'>{params.value}</a>
             },
             { headerName: 'Version', field: 'version' },
             { headerName: 'Participants', field: 'participants' },
@@ -116,7 +141,7 @@ const CyclesGrid = () => {
 
     return (
         <div className='ag-theme-alpine' style={{ height: 300, width: '100%' }}>
-            <AgGridReact rowData={rowData} columnDefs={columnDefs} defaultColDef={defaultColDef} rowHeight={50} />
+            <AgGridReact rowData={rowData} columnDefs={columnDefs} defaultColDef={defaultColDef} rowHeight={55} />
         </div>
     );
 };
