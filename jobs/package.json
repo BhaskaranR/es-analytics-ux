@@ -1,0 +1,30 @@
+{
+    "name": "oracle-elasticsearch-migration",
+    "version": "1.0.0",
+    "description": "Oracle to Elasticsearch data migration job",
+    "main": "oracle-to-elasticsearch.js",
+    "scripts": {
+        "start": "node oracle-to-elasticsearch.js",
+        "test": "node test-connections.js",
+        "validate": "node validate-config.js"
+    },
+    "keywords": [
+        "oracle",
+        "elasticsearch",
+        "migration",
+        "data",
+        "etl"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "oracledb": "^6.3.0",
+        "@elastic/elasticsearch": "^8.15.0"
+    },
+    "devDependencies": {
+        "dotenv": "^16.4.5"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
