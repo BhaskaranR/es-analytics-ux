@@ -5,6 +5,9 @@
  * Checks if all required environment variables are set correctly
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const requiredEnvVars = {
     ORACLE_USER: 'Oracle database username',
     ORACLE_PASSWORD: 'Oracle database password',

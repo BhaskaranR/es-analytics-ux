@@ -19,9 +19,7 @@
     "license": "MIT",
     "dependencies": {
         "oracledb": "^6.3.0",
-        "@elastic/elasticsearch": "^8.15.0"
-    },
-    "devDependencies": {
+        "@elastic/elasticsearch": "^8.15.0",
         "dotenv": "^16.4.5"
     },
     "engines": {

@@ -1,12 +1,14 @@
 #!/usr/bin/env node
-
 /**
  * Test script to validate Oracle and Elasticsearch connections
  * Run this before the main migration job to ensure all connections work
  */
 
-const oracledb = require('oracledb');
+// Load environment variables from .env file
+require('dotenv').config();
+
 const { Client } = require('@elastic/elasticsearch');
+const oracledb = require('oracledb');
 
 // Configuration (same as main job)
 const config = {

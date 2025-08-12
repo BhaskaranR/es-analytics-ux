@@ -13,6 +13,9 @@
  * - TOPICS: Tag(s) assigned to the comment, possibly auto-detected or manually labeled
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const oracledb = require('oracledb');
 const { Client } = require('@elastic/elasticsearch');
 const https = require('https');
