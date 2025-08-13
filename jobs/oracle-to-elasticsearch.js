@@ -361,7 +361,7 @@ async function runPercolatorForComment(commentText, oracleId, questionId) {
                           }
                         : {})
                 },
-                body: matchOperations.join('\n') + '\n',
+                body: matchOperations.map((op) => JSON.stringify(op)).join('\n') + '\n',
                 // @ts-ignore - Node.js specific option
                 agent: esBaseUrl.startsWith('https://') ? httpsAgent : undefined
             });
