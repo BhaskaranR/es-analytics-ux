@@ -2,6 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Debug test-connections.js",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/jobs/test-connections.js",
+            "cwd": "${workspaceFolder}/jobs",
+            "envFile": "${workspaceFolder}/jobs/.env",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Next.js: debug server-side",
             "type": "node-terminal",
             "request": "launch",
