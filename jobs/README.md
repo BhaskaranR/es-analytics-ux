@@ -138,7 +138,9 @@ npm start
 |----------|-------------|---------|
 | `ORACLE_USER` | Oracle database username | `your_username` |
 | `ORACLE_PASSWORD` | Oracle database password | `your_password` |
-| `ORACLE_CONNECT_STRING` | Oracle connection string | `localhost:1521/XE` |
+| `ORACLE_HOST` | Oracle database host | `localhost` |
+| `ORACLE_PORT` | Oracle database port | `1521` |
+| `ORACLE_SID` | Oracle database SID | `XE` |
 | `ELASTICSEARCH_URL` | Elasticsearch URL | `http://localhost:9200` |
 | `ELASTICSEARCH_USERNAME` | Elasticsearch username | `elastic` |
 | `ELASTICSEARCH_PASSWORD` | Elasticsearch password | `changeme` |

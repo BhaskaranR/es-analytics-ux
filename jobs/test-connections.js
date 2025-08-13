@@ -15,7 +15,9 @@ const config = {
     oracle: {
         user: process.env.ORACLE_USER || 'your_username',
         password: process.env.ORACLE_PASSWORD || 'your_password',
-        connectString: process.env.ORACLE_CONNECT_STRING || 'localhost:1521/XE',
+        connectString:
+            process.env.ORACLE_CONNECT_STRING ||
+            `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${process.env.ORACLE_HOST || 'localhost'})(PORT=${process.env.ORACLE_PORT || '1521'}))(CONNECT_DATA=(SID=${process.env.ORACLE_SID || 'XE'})))`,
         poolMin: 2,
         poolMax: 2,
         poolIncrement: 0

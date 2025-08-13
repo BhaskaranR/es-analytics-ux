@@ -11,7 +11,9 @@ require('dotenv').config();
 const requiredEnvVars = {
     ORACLE_USER: 'Oracle database username',
     ORACLE_PASSWORD: 'Oracle database password',
-    ORACLE_CONNECT_STRING: 'Oracle connection string (e.g., localhost:1521/XE)',
+    ORACLE_HOST: 'Oracle database host',
+    ORACLE_PORT: 'Oracle database port',
+    ORACLE_SID: 'Oracle database SID',
     ELASTICSEARCH_URL: 'Elasticsearch URL (e.g., http://localhost:9200)',
     ELASTICSEARCH_USERNAME: 'Elasticsearch username',
     ELASTICSEARCH_PASSWORD: 'Elasticsearch password'
