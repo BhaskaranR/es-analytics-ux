@@ -17,7 +17,6 @@
 require('dotenv').config();
 
 const oracledb = require('oracledb');
-const { Client } = require('@elastic/elasticsearch');
 const https = require('https');
 
 // Configuration
@@ -34,18 +33,6 @@ const config = {
         poolIncrement: 0
     },
 
-    // Elasticsearch Configuration
-    elasticsearch: {
-        node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
-        auth: {
-            username: process.env.ELASTICSEARCH_USERNAME || 'elastic',
-            password: process.env.ELASTICSEARCH_PASSWORD || 'changeme'
-        },
-        tls: {
-            rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0'
-        }
-    },
-
     // Job Configuration
     job: {
         batchSize: parseInt(process.env.BATCH_SIZE) || 1000,
@@ -56,8 +43,20 @@ const config = {
     }
 };
 
-// Elasticsearch client
-let esClient;
+// Elasticsearch configuration (matching route.ts pattern)
+const ELASTICSEARCH_HOST = process.env.ELASTICSEARCH_HOST || 'localhost:9200';
+const ELASTICSEARCH_USERNAME = process.env.ELASTICSEARCH_USERNAME || '';
+const ELASTICSEARCH_PASSWORD = process.env.ELASTICSEARCH_PASSWORD || '';
+const ELASTICSEARCH_API_KEY = process.env.ELASTICSEARCH_API_KEY || '';
+const NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORIZED || '1';
+
+// Create HTTPS agent that ignores SSL certificate issues for development
+const httpsAgent = new https.Agent({
+    rejectUnauthorized: NODE_TLS_REJECT_UNAUTHORIZED === '0'
+});
+
+// Elasticsearch base URL
+let esBaseUrl;
 
 // Oracle connection pool
 let oraclePool;
@@ -80,19 +79,57 @@ async function initializeOracle() {
 }
 
 /**
- * Initialize Elasticsearch client
+ * Initialize Elasticsearch connection
  */
 function initializeElasticsearch() {
     try {
-        console.log('Initializing Elasticsearch client...');
+        console.log('Initializing Elasticsearch connection...');
 
-        esClient = new Client(config.elasticsearch);
+        // Handle ELASTICSEARCH_HOST that might contain protocol
+        if (ELASTICSEARCH_HOST.startsWith('http://') || ELASTICSEARCH_HOST.startsWith('https://')) {
+            esBaseUrl = ELASTICSEARCH_HOST;
+        } else {
+            esBaseUrl = `http://${ELASTICSEARCH_HOST}`;
+        }
 
-        console.log('Elasticsearch client initialized successfully');
+        console.log(`Elasticsearch base URL: ${esBaseUrl}`);
+        console.log('Elasticsearch connection initialized successfully');
     } catch (error) {
-        console.error('Failed to initialize Elasticsearch client:', error);
+        console.error('Failed to initialize Elasticsearch connection:', error);
         throw error;
     }
+}
+
+/**
+ * Helper function to make Elasticsearch requests
+ */
+async function esRequest(endpoint, method = 'GET', body = null) {
+    const headers = { 'Content-Type': 'application/json' };
+
+    // Support both local (Basic Auth) and cloud (API Key) authentication
+    if (ELASTICSEARCH_API_KEY) {
+        // Cloud Elasticsearch with API Key
+        headers['Authorization'] = `ApiKey ${ELASTICSEARCH_API_KEY}`;
+    } else if (ELASTICSEARCH_USERNAME && ELASTICSEARCH_PASSWORD) {
+        // Local Elasticsearch with username/password
+        const auth = Buffer.from(`${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}`).toString('base64');
+        headers['Authorization'] = `Basic ${auth}`;
+    }
+
+    const response = await fetch(`${esBaseUrl}${endpoint}`, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+        // Use HTTPS agent for self-signed certificates in development
+        // @ts-ignore - Node.js specific option
+        agent: esBaseUrl.startsWith('https://') ? httpsAgent : undefined
+    });
+
+    if (!response.ok) {
+        throw new Error(`Elasticsearch request failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
 }
 
 /**
@@ -102,63 +139,60 @@ async function createMatchedCommentsIndex() {
     try {
         console.log(`Creating matched_comments index: ${config.job.matchedCommentsIndex}`);
 
-        const indexExists = await esClient.indices.exists({
-            index: config.job.matchedCommentsIndex
-        });
-
-        if (indexExists) {
+        // Check if index exists
+        try {
+            await esRequest(`/${config.job.matchedCommentsIndex}`);
             console.log(`Index ${config.job.matchedCommentsIndex} already exists`);
 
             return;
+        } catch (error) {
+            // Index doesn't exist, create it
         }
 
         // Create matched_comments index with mapping
-        await esClient.indices.create({
-            index: config.job.matchedCommentsIndex,
-            body: {
-                settings: {
-                    number_of_shards: 1,
-                    number_of_replicas: 0
-                },
-                mappings: {
-                    properties: {
-                        rule_id: {
-                            type: 'keyword'
-                        },
-                        comment_text: {
-                            type: 'text',
-                            analyzer: 'standard'
-                        },
-                        topic: {
-                            type: 'keyword'
-                        },
-                        description: {
-                            type: 'text'
-                        },
-                        score: {
-                            type: 'float'
-                        },
-                        matched_terms: {
-                            type: 'keyword'
-                        },
-                        max_gaps: {
-                            type: 'integer'
-                        },
-                        ordered: {
-                            type: 'boolean'
-                        },
-                        highlighted_text: {
-                            type: 'text'
-                        },
-                        timestamp: {
-                            type: 'date'
-                        },
-                        oracle_id: {
-                            type: 'keyword'
-                        },
-                        question_id: {
-                            type: 'keyword'
-                        }
+        await esRequest(`/${config.job.matchedCommentsIndex}`, 'PUT', {
+            settings: {
+                number_of_shards: 1,
+                number_of_replicas: 0
+            },
+            mappings: {
+                properties: {
+                    rule_id: {
+                        type: 'keyword'
+                    },
+                    comment_text: {
+                        type: 'text',
+                        analyzer: 'standard'
+                    },
+                    topic: {
+                        type: 'keyword'
+                    },
+                    description: {
+                        type: 'text'
+                    },
+                    score: {
+                        type: 'float'
+                    },
+                    matched_terms: {
+                        type: 'keyword'
+                    },
+                    max_gaps: {
+                        type: 'integer'
+                    },
+                    ordered: {
+                        type: 'boolean'
+                    },
+                    highlighted_text: {
+                        type: 'text'
+                    },
+                    timestamp: {
+                        type: 'date'
+                    },
+                    oracle_id: {
+                        type: 'keyword'
+                    },
+                    question_id: {
+                        type: 'keyword'
                     }
                 }
             }
@@ -241,31 +275,28 @@ async function getOracleRecordCount() {
 async function runPercolatorForComment(commentText, oracleId, questionId) {
     try {
         // Run percolator query
-        const percolateResponse = await esClient.search({
-            index: config.job.commentRulesIndex,
-            body: {
-                query: {
-                    percolate: {
-                        field: 'query',
-                        document: {
-                            comment_text: commentText
-                        }
+        const percolateResponse = await esRequest(`/${config.job.commentRulesIndex}/_search`, 'POST', {
+            query: {
+                percolate: {
+                    field: 'query',
+                    document: {
+                        comment_text: commentText
                     }
-                },
-                highlight: {
-                    fields: {
-                        comment_text: {
-                            pre_tags: ['<mark>'],
-                            post_tags: ['</mark>'],
-                            fragment_size: 150,
-                            number_of_fragments: 3
-                        }
+                }
+            },
+            highlight: {
+                fields: {
+                    comment_text: {
+                        pre_tags: ['<mark>'],
+                        post_tags: ['</mark>'],
+                        fragment_size: 150,
+                        number_of_fragments: 3
                     }
                 }
             }
         });
 
-        const matches = percolateResponse.body.hits.hits;
+        const matches = percolateResponse.hits.hits;
 
         if (matches.length === 0) {
             return;
@@ -318,10 +349,7 @@ async function runPercolatorForComment(commentText, oracleId, questionId) {
                 `Found ${matches.length} rule matches for comment ${oracleId}, inserting into ${config.job.matchedCommentsIndex}...`
             );
 
-            const bulkResponse = await esClient.bulk({
-                body: matchOperations,
-                refresh: true
-            });
+            const bulkResponse = await esRequest('/_bulk', 'POST', matchOperations.join('\n') + '\n');
 
             if (bulkResponse.errors) {
                 const errors = bulkResponse.items
@@ -433,25 +461,20 @@ async function migrateData() {
 
         // Verify matched_comments index
         try {
-            const matchedStats = await esClient.indices.stats({
-                index: config.job.matchedCommentsIndex
-            });
+            const matchedStats = await esRequest(`/${config.job.matchedCommentsIndex}/_stats`);
 
-            const matchedCount = matchedStats.body.indices[config.job.matchedCommentsIndex].total.docs.count;
+            const matchedCount = matchedStats.indices[config.job.matchedCommentsIndex].total.docs.count;
             console.log(`Matched comments index contains ${matchedCount} rule matches`);
 
             // Show sample of matched comments
-            const sampleMatches = await esClient.search({
-                index: config.job.matchedCommentsIndex,
-                body: {
-                    size: 3,
-                    sort: [{ timestamp: { order: 'desc' } }]
-                }
+            const sampleMatches = await esRequest(`/${config.job.matchedCommentsIndex}/_search`, 'POST', {
+                size: 3,
+                sort: [{ timestamp: { order: 'desc' } }]
             });
 
-            if (sampleMatches.body.hits.hits.length > 0) {
+            if (sampleMatches.hits.hits.length > 0) {
                 console.log('\n📋 Sample matched comments:');
-                sampleMatches.body.hits.hits.forEach((hit, index) => {
+                sampleMatches.hits.hits.forEach((hit, index) => {
                     const source = hit._source;
                     console.log(
                         `  ${index + 1}. Rule: ${source.rule_id} | Topic: ${source.topic} | Score: ${source.score}`
@@ -478,10 +501,8 @@ async function cleanup() {
             console.log('Oracle connection pool closed');
         }
 
-        if (esClient) {
-            await esClient.close();
-            console.log('Elasticsearch client closed');
-        }
+        // No need to close fetch-based connection
+        console.log('Elasticsearch connection cleanup completed');
     } catch (error) {
         console.error('Cleanup error:', error);
     }

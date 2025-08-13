@@ -7,7 +7,7 @@
 // Load environment variables from .env file
 require('dotenv').config();
 
-const { Client } = require('@elastic/elasticsearch');
+const https = require('https');
 const oracledb = require('oracledb');
 
 // Configuration (same as main job)
@@ -15,24 +15,24 @@ const config = {
     oracle: {
         user: process.env.ORACLE_USER || 'your_username',
         password: process.env.ORACLE_PASSWORD || 'your_password',
-        connectString:
-            process.env.ORACLE_CONNECT_STRING ||
-            `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${process.env.ORACLE_HOST || 'localhost'})(PORT=${process.env.ORACLE_PORT || '1521'}))(CONNECT_DATA=(SID=${process.env.ORACLE_SID || 'XE'})))`,
+        connectString: `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${process.env.ORACLE_HOST || 'localhost'})(PORT=${process.env.ORACLE_PORT || '1521'}))(CONNECT_DATA=(SID=${process.env.ORACLE_SID || 'XE'})))`,
         poolMin: 2,
         poolMax: 2,
         poolIncrement: 0
-    },
-    elasticsearch: {
-        node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
-        auth: {
-            username: process.env.ELASTICSEARCH_USERNAME || 'elastic',
-            password: process.env.ELASTICSEARCH_PASSWORD || 'changeme'
-        },
-        tls: {
-            rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0'
-        }
     }
 };
+
+// Elasticsearch configuration (matching route.ts pattern)
+const ELASTICSEARCH_HOST = process.env.ELASTICSEARCH_HOST || 'localhost:9200';
+const ELASTICSEARCH_USERNAME = process.env.ELASTICSEARCH_USERNAME || '';
+const ELASTICSEARCH_PASSWORD = process.env.ELASTICSEARCH_PASSWORD || '';
+const ELASTICSEARCH_API_KEY = process.env.ELASTICSEARCH_API_KEY || '';
+const NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORIZED || '1';
+
+// Create HTTPS agent that ignores SSL certificate issues for development
+const httpsAgent = new https.Agent({
+    rejectUnauthorized: NODE_TLS_REJECT_UNAUTHORIZED === '0'
+});
 
 /**
  * Test Oracle connection
@@ -101,66 +101,123 @@ async function testOracleConnection() {
 }
 
 /**
- * Test Elasticsearch connection
+ * Test Elasticsearch connection using fetch (matching route.ts pattern)
  */
 async function testElasticsearchConnection() {
     console.log('\nTesting Elasticsearch connection...');
 
     try {
-        const client = new Client(config.elasticsearch);
+        // Handle ELASTICSEARCH_HOST that might contain protocol
+        let baseUrl;
+        if (ELASTICSEARCH_HOST.startsWith('http://') || ELASTICSEARCH_HOST.startsWith('https://')) {
+            baseUrl = ELASTICSEARCH_HOST;
+        } else {
+            baseUrl = `http://${ELASTICSEARCH_HOST}`;
+        }
+
+        const headers = { 'Content-Type': 'application/json' };
+
+        // Support both local (Basic Auth) and cloud (API Key) authentication
+        if (ELASTICSEARCH_API_KEY) {
+            // Cloud Elasticsearch with API Key
+            headers['Authorization'] = `ApiKey ${ELASTICSEARCH_API_KEY}`;
+        } else if (ELASTICSEARCH_USERNAME && ELASTICSEARCH_PASSWORD) {
+            // Local Elasticsearch with username/password
+            const auth = Buffer.from(`${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}`).toString('base64');
+            headers['Authorization'] = `Basic ${auth}`;
+        }
 
         // Test basic connection
-        const info = await client.info();
+        const infoResponse = await fetch(`${baseUrl}/`, {
+            method: 'GET',
+            headers,
+            // Use HTTPS agent for self-signed certificates in development
+            // @ts-ignore - Node.js specific option
+            agent: baseUrl.startsWith('https://') ? httpsAgent : undefined
+        });
+
+        if (!infoResponse.ok) {
+            throw new Error(`Elasticsearch info request failed: ${infoResponse.status} ${infoResponse.statusText}`);
+        }
+
+        const info = await infoResponse.json();
         console.log('✅ Elasticsearch connection successful');
-        console.log(`📊 Cluster: ${info.body.cluster_name}`);
-        console.log(`🔗 Version: ${info.body.version.number}`);
+        console.log(`📊 Cluster: ${info.cluster_name}`);
+        console.log(`🔗 Version: ${info.version.number}`);
 
         // Test index operations
         const testIndex = 'test_connection_index';
 
         // Create test index
-        await client.indices.create({
-            index: testIndex,
-            body: {
+        const createResponse = await fetch(`${baseUrl}/${testIndex}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
                 mappings: {
                     properties: {
                         test_field: { type: 'text' }
                     }
                 }
-            }
+            }),
+            // @ts-ignore - Node.js specific option
+            agent: baseUrl.startsWith('https://') ? httpsAgent : undefined
         });
+
+        if (!createResponse.ok) {
+            throw new Error(`Index creation failed: ${createResponse.status} ${createResponse.statusText}`);
+        }
         console.log('✅ Index creation successful');
 
         // Index a test document
-        await client.index({
-            index: testIndex,
-            body: {
+        const indexResponse = await fetch(`${baseUrl}/${testIndex}/_doc`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
                 test_field: 'test value',
                 timestamp: new Date().toISOString()
-            }
+            }),
+            // @ts-ignore - Node.js specific option
+            agent: baseUrl.startsWith('https://') ? httpsAgent : undefined
         });
+
+        if (!indexResponse.ok) {
+            throw new Error(`Document indexing failed: ${indexResponse.status} ${indexResponse.statusText}`);
+        }
         console.log('✅ Document indexing successful');
 
         // Search test document
-        const searchResult = await client.search({
-            index: testIndex,
-            body: {
+        const searchResponse = await fetch(`${baseUrl}/${testIndex}/_search`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
                 query: {
                     match: {
                         test_field: 'test'
                     }
                 }
-            }
+            }),
+            // @ts-ignore - Node.js specific option
+            agent: baseUrl.startsWith('https://') ? httpsAgent : undefined
         });
+
+        if (!searchResponse.ok) {
+            throw new Error(`Search operation failed: ${searchResponse.status} ${searchResponse.statusText}`);
+        }
         console.log('✅ Search operation successful');
 
         // Clean up test index
-        await client.indices.delete({
-            index: testIndex
+        const deleteResponse = await fetch(`${baseUrl}/${testIndex}`, {
+            method: 'DELETE',
+            headers,
+            // @ts-ignore - Node.js specific option
+            agent: baseUrl.startsWith('https://') ? httpsAgent : undefined
         });
-        console.log('✅ Index cleanup successful');
 
-        await client.close();
+        if (!deleteResponse.ok) {
+            console.warn('⚠️ Index cleanup failed (this is not critical)');
+        } else {
+            console.log('✅ Index cleanup successful');
+        }
     } catch (error) {
         console.error('❌ Elasticsearch connection failed:', error.message);
         throw error;
