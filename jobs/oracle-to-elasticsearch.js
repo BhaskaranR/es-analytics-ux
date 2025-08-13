@@ -349,10 +349,31 @@ async function runPercolatorForComment(commentText, oracleId, questionId) {
                 `Found ${matches.length} rule matches for comment ${oracleId}, inserting into ${config.job.matchedCommentsIndex}...`
             );
 
-            const bulkResponse = await esRequest('/_bulk', 'POST', matchOperations.join('\n') + '\n');
+            // For bulk operations, we need to use application/x-ndjson content type
+            const bulkResponse = await fetch(`${esBaseUrl}/_bulk`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-ndjson',
+                    ...(ELASTICSEARCH_API_KEY ? { Authorization: `ApiKey ${ELASTICSEARCH_API_KEY}` } : {}),
+                    ...(ELASTICSEARCH_USERNAME && ELASTICSEARCH_PASSWORD
+                        ? {
+                              Authorization: `Basic ${Buffer.from(`${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}`).toString('base64')}`
+                          }
+                        : {})
+                },
+                body: matchOperations.join('\n') + '\n',
+                // @ts-ignore - Node.js specific option
+                agent: esBaseUrl.startsWith('https://') ? httpsAgent : undefined
+            });
 
-            if (bulkResponse.errors) {
-                const errors = bulkResponse.items
+            if (!bulkResponse.ok) {
+                throw new Error(`Bulk operation failed: ${bulkResponse.status} ${bulkResponse.statusText}`);
+            }
+
+            const bulkResponseData = await bulkResponse.json();
+
+            if (bulkResponseData.errors) {
+                const errors = bulkResponseData.items
                     .filter((item) => item.index && item.index.error)
                     .map((item) => item.index.error);
 
