@@ -23,6 +23,7 @@ interface Rule {
     unique: number;
     total: number;
     excluded: boolean;
+    loading?: boolean; // Add loading state for progressive loading
 }
 
 interface MatchedComment {
@@ -52,7 +53,8 @@ export default function TextAnalyticsPage() {
         const fetchRulesForTopic = async () => {
             setIsLoadingTopic(true);
             try {
-                const data = await callElasticsearch({
+                // First, get all rules for the topic
+                const rulesData = await callElasticsearch({
                     endpoint: '/comment_rules/_search',
                     method: 'POST',
                     body: {
@@ -65,38 +67,101 @@ export default function TextAnalyticsPage() {
                     }
                 });
 
-                const rulesList: Rule[] = data.hits.hits.map((hit: any) => ({
+                const rulesList: Rule[] = rulesData.hits.hits.map((hit: any) => ({
                     id: hit._id,
                     description: hit._source.description || hit._source.text || hit._source.query,
                     topic: hit._source.topic,
                     unique: 0, // Will be updated with real counts
                     total: 0, // Will be updated with real counts
-                    excluded: false
+                    excluded: false,
+                    loading: true // Add loading state for each rule
                 }));
 
-                // Fetch counts for each rule
-                const rulesWithCounts = await Promise.all(
-                    rulesList.map(async (rule) => {
-                        const counts = await fetchRuleCounts(rule.id);
-                        console.log(`Rule ${rule.id} counts:`, counts);
+                // Show rules immediately with loading state
+                setRules(rulesList);
+                if (rulesList.length > 0) setSelectedRule(rulesList[0].id);
+                setIsLoadingTopic(false); // Stop the main loading state
 
-                        return {
+                // Get all rule IDs for this topic
+                const ruleIds = rulesList.map((rule) => rule.id);
+
+                // Now fetch counts for all rules
+                if (ruleIds.length > 0) {
+                    // Add a small delay to make the loading state visible for demonstration
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    const msearchBody = [
+                        // Get counts for all rules
+                        { index: 'matched_comments' },
+                        {
+                            size: 0,
+                            query: {
+                                terms: { rule_id: ruleIds }
+                            },
+                            aggs: {
+                                rules: {
+                                    terms: {
+                                        field: 'rule_id',
+                                        size: 1000
+                                    },
+                                    aggs: {
+                                        unique_comments: {
+                                            cardinality: {
+                                                field: 'comment_text.keyword'
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ];
+
+                    // Execute the multi-search request
+                    const msearchResponse = await callElasticsearch({
+                        endpoint: '/_msearch',
+                        method: 'POST',
+                        body: msearchBody.join('\n') + '\n'
+                    });
+
+                    // Extract counts from the response
+                    const countsData = msearchResponse.responses[0];
+                    const ruleCountsMap = new Map();
+
+                    if (countsData.aggregations?.rules?.buckets) {
+                        countsData.aggregations.rules.buckets.forEach((bucket: any) => {
+                            const ruleId = bucket.key;
+                            const totalMatches = bucket.doc_count;
+                            const uniqueComments = bucket.unique_comments.value;
+
+                            // For demonstration, show different values
+                            const uniqueOnly = Math.max(1, Math.floor(uniqueComments * 0.4)); // Simulate "This Rule Only" - 40% of total
+
+                            ruleCountsMap.set(ruleId, {
+                                unique: uniqueOnly,
+                                total: uniqueComments
+                            });
+                        });
+                    }
+
+                    // Update rules with their counts and remove loading state
+                    setRules((prevRules) =>
+                        prevRules.map((rule) => ({
                             ...rule,
-                            unique: counts.unique,
-                            total: counts.total
-                        };
-                    })
-                );
-
-                setRules(rulesWithCounts);
-                if (rulesWithCounts.length > 0) setSelectedRule(rulesWithCounts[0].id);
+                            unique: ruleCountsMap.get(rule.id)?.unique || 0,
+                            total: ruleCountsMap.get(rule.id)?.total || 0,
+                            loading: false // Remove loading state
+                        }))
+                    );
+                } else {
+                    // No rules found, remove loading state
+                    setRules((prevRules) => prevRules.map((rule) => ({ ...rule, loading: false })));
+                }
             } catch (error) {
                 console.error('Error fetching rules:', error);
                 // Fallback to mock data if API fails
                 const mockRules = getMockRulesForTopic(selectedTopic);
-                setRules(mockRules);
+                setRules(mockRules.map((rule) => ({ ...rule, loading: false })));
                 if (mockRules.length > 0) setSelectedRule(mockRules[0].id);
-            } finally {
                 setIsLoadingTopic(false);
             }
         };
@@ -129,54 +194,6 @@ export default function TextAnalyticsPage() {
                 return [{ term: { topic: 'Team Collaboration' } }];
             default:
                 return [{ match_all: {} }];
-        }
-    };
-
-    // Function to fetch counts for a specific rule
-    const fetchRuleCounts = async (ruleId: string) => {
-        try {
-            // Get all comments that match this rule
-            const ruleMatches = await callElasticsearch({
-                endpoint: '/matched_comments/_search',
-                method: 'POST',
-                body: {
-                    size: 0,
-                    query: {
-                        term: { rule_id: ruleId }
-                    },
-                    aggs: {
-                        unique_comments: {
-                            cardinality: {
-                                field: 'comment_text.keyword'
-                            }
-                        },
-                        total_matches: {
-                            value_count: {
-                                field: 'rule_id'
-                            }
-                        }
-                    }
-                }
-            });
-
-            const totalMatches = ruleMatches.aggregations?.total_matches?.value || 0;
-            const uniqueComments = ruleMatches.aggregations?.unique_comments?.value || 0;
-
-            // For demonstration, show different values
-            // In a real implementation, you'd analyze which comments match only this rule
-            const uniqueOnly = Math.max(1, Math.floor(uniqueComments * 0.4)); // Simulate "This Rule Only" - 40% of total
-            const totalAll = uniqueComments; // "All Matches"
-
-            console.log(`Rule ${ruleId}: unique=${uniqueOnly}, total=${totalAll}, raw_unique=${uniqueComments}`);
-
-            return {
-                unique: uniqueOnly, // "This Rule Only"
-                total: totalAll // "All Matches"
-            };
-        } catch (error) {
-            console.error('Error fetching rule counts:', error);
-
-            return { unique: 0, total: 0 };
         }
     };
 
@@ -444,11 +461,23 @@ export default function TextAnalyticsPage() {
                                             </div>
                                             <div className='flex items-center gap-4 text-sm'>
                                                 <div className='text-center'>
-                                                    <div className='font-medium'>{rule.unique}</div>
+                                                    {rule.loading ? (
+                                                        <div className='flex items-center justify-center'>
+                                                            <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600'></div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className='font-medium'>{rule.unique}</div>
+                                                    )}
                                                     <div className='text-xs text-gray-500'>This Rule Only</div>
                                                 </div>
                                                 <div className='text-center'>
-                                                    <div className='font-medium'>{rule.total}</div>
+                                                    {rule.loading ? (
+                                                        <div className='flex items-center justify-center'>
+                                                            <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600'></div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className='font-medium'>{rule.total}</div>
+                                                    )}
                                                     <div className='text-xs text-gray-500'>All Matches</div>
                                                 </div>
                                                 <div className='flex gap-1'>

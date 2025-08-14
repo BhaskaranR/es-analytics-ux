@@ -5,6 +5,7 @@ export interface MockRule {
     unique: number;
     total: number;
     excluded: boolean;
+    loading?: boolean;
 }
 
 export const getMockRulesForTopic = (topic: string): MockRule[] => {
