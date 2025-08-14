@@ -90,37 +90,38 @@ export default function TextAnalyticsPage() {
                     // Add a small delay to make the loading state visible for demonstration
                     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-                    const msearchBody = [
-                        // Get counts for all rules
-                        { index: 'matched_comments' },
-                        {
-                            size: 0,
-                            query: {
-                                terms: { rule_id: ruleIds }
-                            },
-                            aggs: {
-                                rules: {
-                                    terms: {
-                                        field: 'rule_id',
-                                        size: 1000
-                                    },
-                                    aggs: {
-                                        unique_comments: {
-                                            cardinality: {
-                                                field: 'comment_text.keyword'
+                    // Format the msearch body as newline-delimited JSON (NDJSON)
+                    const msearchBody =
+                        [
+                            JSON.stringify({ index: 'matched_comments' }),
+                            JSON.stringify({
+                                size: 0,
+                                query: {
+                                    terms: { rule_id: ruleIds }
+                                },
+                                aggs: {
+                                    rules: {
+                                        terms: {
+                                            field: 'rule_id',
+                                            size: 1000
+                                        },
+                                        aggs: {
+                                            unique_comments: {
+                                                cardinality: {
+                                                    field: 'comment_text.keyword'
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                        }
-                    ];
+                            })
+                        ].join('\n') + '\n';
 
                     // Execute the multi-search request
                     const msearchResponse = await callElasticsearch({
                         endpoint: '/_msearch',
                         method: 'POST',
-                        body: msearchBody.join('\n') + '\n'
+                        body: msearchBody
                     });
 
                     // Extract counts from the response
@@ -169,18 +170,18 @@ export default function TextAnalyticsPage() {
         fetchRulesForTopic();
 
         // Also fetch topic counts
-        const fetchCounts = async () => {
-            setIsLoadingCounts(true);
-            try {
-                const counts = await fetchTopicCounts(selectedTopic);
-                setTopicCounts(counts);
-            } catch (error) {
-                console.error('Error fetching topic counts:', error);
-            } finally {
-                setIsLoadingCounts(false);
-            }
-        };
-        fetchCounts();
+        // const fetchCounts = async () => {
+        //     setIsLoadingCounts(true);
+        //     try {
+        //         const counts = await fetchTopicCounts(selectedTopic);
+        //         setTopicCounts(counts);
+        //     } catch (error) {
+        //         console.error('Error fetching topic counts:', error);
+        //     } finally {
+        //         setIsLoadingCounts(false);
+        //     }
+        // };
+        // fetchCounts();
     }, [selectedTopic, refreshTrigger]);
 
     // Function to get topic-specific queries
