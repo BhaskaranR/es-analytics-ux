@@ -90,42 +90,32 @@ export default function TextAnalyticsPage() {
                     // Add a small delay to make the loading state visible for demonstration
                     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-                    // Format the msearch body as newline-delimited JSON (NDJSON)
-                    const msearchBody =
-                        [
-                            JSON.stringify({ index: 'matched_comments' }),
-                            JSON.stringify({
-                                size: 0,
-                                query: {
-                                    terms: { rule_id: ruleIds }
-                                },
-                                aggs: {
-                                    rules: {
-                                        terms: {
-                                            field: 'rule_id',
-                                            size: 1000
-                                        },
-                                        aggs: {
-                                            unique_comments: {
-                                                cardinality: {
-                                                    field: 'comment_text.keyword'
-                                                }
+                    // Execute the counts search request
+                    const countsData = await callElasticsearch({
+                        endpoint: '/matched_comments/_search',
+                        method: 'POST',
+                        body: {
+                            size: 0,
+                            query: {
+                                terms: { rule_id: ruleIds }
+                            },
+                            aggs: {
+                                rules: {
+                                    terms: {
+                                        field: 'rule_id',
+                                        size: 1000
+                                    },
+                                    aggs: {
+                                        unique_comments: {
+                                            cardinality: {
+                                                field: 'comment_text.keyword'
                                             }
                                         }
                                     }
                                 }
-                            })
-                        ].join('\n') + '\n';
-
-                    // Execute the multi-search request
-                    const msearchResponse = await callElasticsearch({
-                        endpoint: '/_msearch',
-                        method: 'POST',
-                        body: msearchBody
+                            }
+                        }
                     });
-
-                    // Extract counts from the response
-                    const countsData = msearchResponse.responses[0];
                     const ruleCountsMap = new Map();
 
                     if (countsData.aggregations?.rules?.buckets) {
