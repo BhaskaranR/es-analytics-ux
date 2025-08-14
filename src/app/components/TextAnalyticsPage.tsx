@@ -16,6 +16,16 @@ import { getMockCommentsByRule, getMockCommentsForTopic, getMockRulesForTopic } 
 import { RulesBuilderModal } from './RulesBuilderModal';
 import { Copy, Edit, Trash2, X } from 'lucide-react';
 
+interface Topic {
+    id: string;
+    name: string;
+    count: number;
+}
+
+interface TextAnalyticsPageProps {
+    initialTopics?: Topic[];
+}
+
 interface Rule {
     id: string;
     description: string;
@@ -33,7 +43,7 @@ interface MatchedComment {
     [key: string]: any;
 }
 
-export default function TextAnalyticsPage() {
+export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsPageProps) {
     const [rules, setRules] = useState<Rule[]>([]);
     const [selectedRule, setSelectedRule] = useState<string | null>(null);
     const [selectedRules, setSelectedRules] = useState<string[]>([]);
@@ -45,8 +55,11 @@ export default function TextAnalyticsPage() {
     const [isLoadingTopic, setIsLoadingTopic] = useState(false);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
 
-    const [selectedTopic, setSelectedTopic] = useState<string>('career-development');
+    const [selectedTopic, setSelectedTopic] = useState<string>(initialTopics[0]?.id || 'career-development');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [availableTopics, setAvailableTopics] =
+        useState<Array<{ id: string; name: string; count: number }>>(initialTopics);
+    const [isLoadingTopics, setIsLoadingTopics] = useState(false);
 
     // Fetch rules when topic changes or refresh is triggered
     useEffect(() => {
@@ -160,18 +173,18 @@ export default function TextAnalyticsPage() {
         fetchRulesForTopic();
 
         // Also fetch topic counts
-        // const fetchCounts = async () => {
-        //     setIsLoadingCounts(true);
-        //     try {
-        //         const counts = await fetchTopicCounts(selectedTopic);
-        //         setTopicCounts(counts);
-        //     } catch (error) {
-        //         console.error('Error fetching topic counts:', error);
-        //     } finally {
-        //         setIsLoadingCounts(false);
-        //     }
-        // };
-        // fetchCounts();
+        const fetchCounts = async () => {
+            setIsLoadingCounts(true);
+            try {
+                const counts = await fetchTopicCounts(selectedTopic);
+                setTopicCounts(counts);
+            } catch (error) {
+                console.error('Error fetching topic counts:', error);
+            } finally {
+                setIsLoadingCounts(false);
+            }
+        };
+        fetchCounts();
     }, [selectedTopic, refreshTrigger]);
 
     // Function to get topic-specific queries
@@ -191,14 +204,9 @@ export default function TextAnalyticsPage() {
     // Function to fetch topic-level counts
     const fetchTopicCounts = async (topic: string) => {
         try {
-            // Map frontend topic names to backend topic names
-            const topicMapping: { [key: string]: string } = {
-                'career-development': 'Career Development',
-                'client-support': 'Client Support',
-                'team-collaboration': 'Team Collaboration'
-            };
-
-            const backendTopic = topicMapping[topic] || topic;
+            // Find the topic in available topics to get the correct backend name
+            const topicData = availableTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
+            const backendTopic = topicData ? topicData.name : topic;
 
             const data = await callElasticsearch({
                 endpoint: '/matched_comments/_search',
@@ -238,14 +246,9 @@ export default function TextAnalyticsPage() {
     const fetchCommentsForTopic = async (topic: string) => {
         setIsLoadingComments(true);
         try {
-            // Map frontend topic names to backend topic names
-            const topicMapping: { [key: string]: string } = {
-                'career-development': 'Career Development',
-                'client-support': 'Client Support',
-                'team-collaboration': 'Team Collaboration'
-            };
-
-            const backendTopic = topicMapping[topic] || topic;
+            // Find the topic in available topics to get the correct backend name
+            const topicData = availableTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
+            const backendTopic = topicData ? topicData.name : topic;
 
             const data = await callElasticsearch({
                 endpoint: '/matched_comments/_search',
@@ -385,9 +388,11 @@ export default function TextAnalyticsPage() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value='career-development'>Career Development</SelectItem>
-                                        <SelectItem value='client-support'>Client Support</SelectItem>
-                                        <SelectItem value='team-collaboration'>Team Collaboration</SelectItem>
+                                        {availableTopics.map((topic) => (
+                                            <SelectItem key={topic.id} value={topic.id}>
+                                                {topic.name} ({topic.count})
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                                 {isLoadingTopic && (
