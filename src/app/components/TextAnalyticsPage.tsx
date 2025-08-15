@@ -53,7 +53,7 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
     const [isLoadingTopic, setIsLoadingTopic] = useState(false);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
 
-    const [selectedTopic, setSelectedTopic] = useState<string>('');
+    const [selectedTopic, setSelectedTopic] = useState<string>(initialTopics[0]?.id || '');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     // Handle refresh trigger (for when new rules are created)
@@ -64,13 +64,13 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
         }
     }, [refreshTrigger]);
 
-    // Initial load: select first topic and fetch its data
+    // Initial data fetch when component mounts with selected topic
     useEffect(() => {
-        if (initialTopics.length > 0 && !selectedTopic) {
-            console.log('Initial load: selecting first topic:', initialTopics[0].id);
-            handleTopicChange(initialTopics[0].id);
+        if (selectedTopic) {
+            console.log('Initial data fetch for topic:', selectedTopic);
+            handleTopicChange(selectedTopic);
         }
-    }, [initialTopics, selectedTopic]);
+    }, []); // Only run once on mount
 
     // Function to get topic-specific queries
     const getTopicQueries = (topic: string) => {
