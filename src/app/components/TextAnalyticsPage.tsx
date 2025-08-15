@@ -18,7 +18,6 @@ import { Copy, Edit, Trash2, X } from 'lucide-react';
 interface Topic {
     id: string;
     name: string;
-    count: number;
 }
 
 interface TextAnalyticsPageProps {
@@ -81,7 +80,7 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
         });
 
         // Find the topic in available topics to get the correct backend name
-        const topicData = initialTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
+        const topicData = initialTopics.find((t: Topic) => t.id === topic);
 
         if (topicData) {
             console.log('Found topic data:', topicData);
@@ -102,7 +101,7 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
     const fetchTopicCounts = async (topic: string) => {
         try {
             // Find the topic in available topics to get the correct backend name
-            const topicData = initialTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
+            const topicData = initialTopics.find((t: Topic) => t.id === topic);
             const backendTopic = topicData ? topicData.name : topic;
 
             const data = await callElasticsearch({
@@ -144,7 +143,7 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
         setIsLoadingComments(true);
         try {
             // Find the topic in available topics to get the correct backend name
-            const topicData = initialTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
+            const topicData = initialTopics.find((t: Topic) => t.id === topic);
             const backendTopic = topicData ? topicData.name : topic;
 
             const data = await callElasticsearch({
@@ -260,7 +259,7 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
         console.log('Topic changed from', selectedTopic, 'to', newTopic);
 
         // Validate that the new topic exists in available topics
-        const topicExists = initialTopics.find((t) => t.id === newTopic);
+        const topicExists = initialTopics.find((t: Topic) => t.id === newTopic);
         if (!topicExists) {
             console.warn(
                 `Topic "${newTopic}" not found in available topics:`,
@@ -411,7 +410,7 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
                                     <SelectContent>
                                         {initialTopics.map((topic) => (
                                             <SelectItem key={topic.id} value={topic.id}>
-                                                {topic.name} ({topic.count})
+                                                {topic.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

@@ -3,7 +3,6 @@ import TextAnalyticsPage from './components/TextAnalyticsPage';
 export interface Topic {
     id: string;
     name: string;
-    count: number;
 }
 
 /**
@@ -31,13 +30,6 @@ const Page = async () => {
                                 terms: {
                                     field: 'topic.keyword',
                                     size: 100
-                                },
-                                aggs: {
-                                    rule_count: {
-                                        value_count: {
-                                            field: '_id'
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -51,8 +43,7 @@ const Page = async () => {
             topics =
                 data.aggregations?.topics?.buckets?.map((bucket: any) => ({
                     id: bucket.key.toLowerCase().replace(/\s+/g, '-'),
-                    name: bucket.key,
-                    count: bucket.rule_count.value
+                    name: bucket.key
                 })) || [];
         }
     } catch (error) {
@@ -62,9 +53,9 @@ const Page = async () => {
     // Fallback to default topics if no data found
     if (topics.length === 0) {
         topics = [
-            { id: 'career-development', name: 'Career Development', count: 0 },
-            { id: 'client-support', name: 'Client Support', count: 0 },
-            { id: 'team-collaboration', name: 'Team Collaboration', count: 0 }
+            { id: 'career-development', name: 'Career Development' },
+            { id: 'client-support', name: 'Client Support' },
+            { id: 'team-collaboration', name: 'Team Collaboration' }
         ];
     }
 
