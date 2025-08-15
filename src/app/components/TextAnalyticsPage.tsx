@@ -13,7 +13,6 @@ import { Separator } from '@/registry/new-york-v4/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/registry/new-york-v4/ui/tabs';
 
 import { getMockCommentsByRule, getMockCommentsForTopic, getMockRulesForTopic } from '../../_mock';
-import { RulesBuilderModal } from './RulesBuilderModal';
 import { Copy, Edit, Trash2, X } from 'lucide-react';
 
 interface Topic {
@@ -55,157 +54,55 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
     const [isLoadingTopic, setIsLoadingTopic] = useState(false);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
 
-    const [selectedTopic, setSelectedTopic] = useState<string>(initialTopics[0]?.id || 'career-development');
+    const [selectedTopic, setSelectedTopic] = useState<string>('');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const [availableTopics, setAvailableTopics] =
-        useState<Array<{ id: string; name: string; count: number }>>(initialTopics);
-    const [isLoadingTopics, setIsLoadingTopics] = useState(false);
 
-    // Fetch rules when topic changes or refresh is triggered
+    // Handle refresh trigger (for when new rules are created)
     useEffect(() => {
-        const fetchRulesForTopic = async () => {
-            setIsLoadingTopic(true);
-            try {
-                // First, get all rules for the topic
-                const rulesData = await callElasticsearch({
-                    endpoint: '/comment_rules/_search',
-                    method: 'POST',
-                    body: {
-                        size: 100,
-                        query: {
-                            bool: {
-                                should: getTopicQueries(selectedTopic)
-                            }
-                        }
-                    }
-                });
+        if (selectedTopic && refreshTrigger > 0) {
+            console.log('Refresh triggered, refetching data for topic:', selectedTopic);
+            handleTopicChange(selectedTopic);
+        }
+    }, [refreshTrigger]);
 
-                const rulesList: Rule[] = rulesData.hits.hits.map((hit: any) => ({
-                    id: hit._id,
-                    description: hit._source.description || hit._source.text || hit._source.query,
-                    topic: hit._source.topic,
-                    unique: 0, // Will be updated with real counts
-                    total: 0, // Will be updated with real counts
-                    excluded: false,
-                    loading: true // Add loading state for each rule
-                }));
-
-                // Show rules immediately with loading state
-                setRules(rulesList);
-                if (rulesList.length > 0) setSelectedRule(rulesList[0].id);
-                setIsLoadingTopic(false); // Stop the main loading state
-
-                // Get all rule IDs for this topic
-                const ruleIds = rulesList.map((rule) => rule.id);
-
-                // Now fetch counts for all rules
-                if (ruleIds.length > 0) {
-                    // Add a small delay to make the loading state visible for demonstration
-                    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                    // Execute the counts search request
-                    const countsData = await callElasticsearch({
-                        endpoint: '/matched_comments/_search',
-                        method: 'POST',
-                        body: {
-                            size: 0,
-                            query: {
-                                terms: { rule_id: ruleIds }
-                            },
-                            aggs: {
-                                rules: {
-                                    terms: {
-                                        field: 'rule_id',
-                                        size: 1000
-                                    },
-                                    aggs: {
-                                        unique_comments: {
-                                            cardinality: {
-                                                field: 'comment_text.keyword'
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    const ruleCountsMap = new Map();
-
-                    if (countsData.aggregations?.rules?.buckets) {
-                        countsData.aggregations.rules.buckets.forEach((bucket: any) => {
-                            const ruleId = bucket.key;
-                            const totalMatches = bucket.doc_count;
-                            const uniqueComments = bucket.unique_comments.value;
-
-                            // For demonstration, show different values
-                            const uniqueOnly = Math.max(1, Math.floor(uniqueComments * 0.4)); // Simulate "This Rule Only" - 40% of total
-
-                            ruleCountsMap.set(ruleId, {
-                                unique: uniqueOnly,
-                                total: uniqueComments
-                            });
-                        });
-                    }
-
-                    // Update rules with their counts and remove loading state
-                    setRules((prevRules) =>
-                        prevRules.map((rule) => ({
-                            ...rule,
-                            unique: ruleCountsMap.get(rule.id)?.unique || 0,
-                            total: ruleCountsMap.get(rule.id)?.total || 0,
-                            loading: false // Remove loading state
-                        }))
-                    );
-                } else {
-                    // No rules found, remove loading state
-                    setRules((prevRules) => prevRules.map((rule) => ({ ...rule, loading: false })));
-                }
-            } catch (error) {
-                console.error('Error fetching rules:', error);
-                // Fallback to mock data if API fails
-                const mockRules = getMockRulesForTopic(selectedTopic);
-                setRules(mockRules.map((rule) => ({ ...rule, loading: false })));
-                if (mockRules.length > 0) setSelectedRule(mockRules[0].id);
-                setIsLoadingTopic(false);
-            }
-        };
-
-        fetchRulesForTopic();
-
-        // Also fetch topic counts
-        const fetchCounts = async () => {
-            setIsLoadingCounts(true);
-            try {
-                const counts = await fetchTopicCounts(selectedTopic);
-                setTopicCounts(counts);
-            } catch (error) {
-                console.error('Error fetching topic counts:', error);
-            } finally {
-                setIsLoadingCounts(false);
-            }
-        };
-        fetchCounts();
-    }, [selectedTopic, refreshTrigger]);
+    // Initial load: select first topic and fetch its data
+    useEffect(() => {
+        if (initialTopics.length > 0 && !selectedTopic) {
+            console.log('Initial load: selecting first topic:', initialTopics[0].id);
+            handleTopicChange(initialTopics[0].id);
+        }
+    }, [initialTopics, selectedTopic]);
 
     // Function to get topic-specific queries
     const getTopicQueries = (topic: string) => {
-        switch (topic) {
-            case 'career-development':
-                return [{ term: { topic: 'Career Development' } }];
-            case 'client-support':
-                return [{ term: { topic: 'Client Support' } }];
-            case 'team-collaboration':
-                return [{ term: { topic: 'Team Collaboration' } }];
-            default:
-                return [{ match_all: {} }];
+        console.log('getTopicQueries called with:', {
+            topic,
+            availableTopics: initialTopics.map((t) => ({ id: t.id, name: t.name }))
+        });
+
+        // Find the topic in available topics to get the correct backend name
+        const topicData = initialTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
+
+        if (topicData) {
+            console.log('Found topic data:', topicData);
+
+            return [{ term: { topic: topicData.name } }];
         }
+
+        // If topic not found in available topics, return empty result instead of match_all
+        console.warn(
+            `Topic "${topic}" not found in available topics. Available topics:`,
+            initialTopics.map((t) => t.id)
+        );
+
+        return [{ term: { topic: 'NON_EXISTENT_TOPIC' } }]; // This will return no results
     };
 
     // Function to fetch topic-level counts
     const fetchTopicCounts = async (topic: string) => {
         try {
             // Find the topic in available topics to get the correct backend name
-            const topicData = availableTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
+            const topicData = initialTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
             const backendTopic = topicData ? topicData.name : topic;
 
             const data = await callElasticsearch({
@@ -247,7 +144,7 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
         setIsLoadingComments(true);
         try {
             // Find the topic in available topics to get the correct backend name
-            const topicData = availableTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
+            const topicData = initialTopics.find((t: { id: string; name: string; count: number }) => t.id === topic);
             const backendTopic = topicData ? topicData.name : topic;
 
             const data = await callElasticsearch({
@@ -359,6 +256,130 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
         }
     };
 
+    const handleTopicChange = async (newTopic: string) => {
+        console.log('Topic changed from', selectedTopic, 'to', newTopic);
+
+        // Validate that the new topic exists in available topics
+        const topicExists = initialTopics.find((t) => t.id === newTopic);
+        if (!topicExists) {
+            console.warn(
+                `Topic "${newTopic}" not found in available topics:`,
+                initialTopics.map((t) => t.id)
+            );
+
+            return;
+        }
+
+        // Set loading state and update selected topic immediately
+        setIsLoadingTopic(true);
+        setSelectedTopic(newTopic);
+
+        try {
+            // Direct API call - no waiting for useEffect
+            const rulesData = await callElasticsearch({
+                endpoint: '/comment_rules/_search',
+                method: 'POST',
+                body: {
+                    size: 100,
+                    query: {
+                        bool: {
+                            should: getTopicQueries(newTopic)
+                        }
+                    }
+                }
+            });
+
+            const rulesList: Rule[] = rulesData.hits.hits.map((hit: any) => ({
+                id: hit._id,
+                description: hit._source.description || hit._source.text || hit._source.query,
+                topic: hit._source.topic,
+                unique: 0,
+                total: 0,
+                excluded: false,
+                loading: true
+            }));
+
+            // Show rules immediately with loading state
+            setRules(rulesList);
+            if (rulesList.length > 0) setSelectedRule(rulesList[0].id);
+
+            // Get all rule IDs for this topic
+            const ruleIds = rulesList.map((rule) => rule.id);
+
+            // Fetch counts for all rules
+            if (ruleIds.length > 0) {
+                const countsData = await callElasticsearch({
+                    endpoint: '/matched_comments/_search',
+                    method: 'POST',
+                    body: {
+                        size: 0,
+                        query: {
+                            terms: { rule_id: ruleIds }
+                        },
+                        aggs: {
+                            rules: {
+                                terms: {
+                                    field: 'rule_id',
+                                    size: 1000
+                                },
+                                aggs: {
+                                    unique_comments: {
+                                        cardinality: {
+                                            field: 'comment_text.keyword'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                const ruleCountsMap = new Map();
+
+                if (countsData.aggregations?.rules?.buckets) {
+                    countsData.aggregations.rules.buckets.forEach((bucket: any) => {
+                        const ruleId = bucket.key;
+                        const uniqueComments = bucket.unique_comments.value;
+                        const uniqueOnly = Math.max(1, Math.floor(uniqueComments * 0.4));
+
+                        ruleCountsMap.set(ruleId, {
+                            unique: uniqueOnly,
+                            total: uniqueComments
+                        });
+                    });
+                }
+
+                // Update rules with their counts and remove loading state
+                setRules((prevRules) =>
+                    prevRules.map((rule) => ({
+                        ...rule,
+                        unique: ruleCountsMap.get(rule.id)?.unique || 0,
+                        total: ruleCountsMap.get(rule.id)?.total || 0,
+                        loading: false
+                    }))
+                );
+            } else {
+                // No rules found, remove loading state
+                setRules((prevRules) => prevRules.map((rule) => ({ ...rule, loading: false })));
+            }
+
+            // Also fetch topic counts
+            const counts = await fetchTopicCounts(newTopic);
+            setTopicCounts(counts);
+
+            // Fetch comments for the topic
+            await fetchCommentsForTopic(newTopic);
+        } catch (error) {
+            console.error('Error fetching rules:', error);
+            // Fallback to mock data if API fails
+            const mockRules = getMockRulesForTopic(newTopic);
+            setRules(mockRules.map((rule) => ({ ...rule, loading: false })));
+            if (mockRules.length > 0) setSelectedRule(mockRules[0].id);
+        } finally {
+            setIsLoadingTopic(false);
+        }
+    };
+
     const toggleRuleSelection = async (ruleId: string) => {
         const newSelectedRules = selectedRules.includes(ruleId)
             ? selectedRules.filter((id) => id !== ruleId)
@@ -383,12 +404,12 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
                             <div className='flex items-center gap-4'>
                                 <span className='font-medium'>Topics rules for</span>
 
-                                <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                                <Select value={selectedTopic} onValueChange={handleTopicChange}>
                                     <SelectTrigger className='w-100'>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {availableTopics.map((topic) => (
+                                        {initialTopics.map((topic) => (
                                             <SelectItem key={topic.id} value={topic.id}>
                                                 {topic.name} ({topic.count})
                                             </SelectItem>
@@ -402,14 +423,6 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
                                     </div>
                                 )}
                             </div>
-
-                            <RulesBuilderModal
-                                onRuleCreated={(rule) => {
-                                    // Refresh the rules list after creating a new rule
-                                    console.log('New rule created:', rule);
-                                    setRefreshTrigger((prev) => prev + 1);
-                                }}
-                            />
                         </div>
 
                         {/* Search */}
