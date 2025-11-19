@@ -257,19 +257,6 @@ export default function TextAnalyticsPage({ initialTopics = [] }: TextAnalyticsP
 
     const handleTopicChange = async (newTopic: string) => {
         console.log('Topic changed from', selectedTopic, 'to', newTopic);
-
-        // Validate that the new topic exists in available topics
-        const topicExists = initialTopics.find((t: Topic) => t.id === newTopic);
-        if (!topicExists) {
-            console.warn(
-                `Topic "${newTopic}" not found in available topics:`,
-                initialTopics.map((t) => t.id)
-            );
-
-            return;
-        }
-
-        // Set loading state and update selected topic immediately
         setIsLoadingTopic(true);
         setSelectedTopic(newTopic);
 
