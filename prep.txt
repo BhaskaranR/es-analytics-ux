@@ -1,0 +1,78 @@
+Manager Introduction
+
+“Next, Bhaskar will walk us through how we’re analyzing our 2024 survey feedback using Elasticsearch.
+He has migrated over 1 million survey responses, along with more than 300 word groups and 4,000+ rules defined in 2024.
+All of this has been brought into Elasticsearch to classify themes with precision.
+Bhaskar, over to you.”
+
+Your Part
+Opening
+
+“Thanks. I’ll quickly explain how our Topics, Rules, and Word Groups work together to classify survey feedback at scale before we jump into the UI.”
+
+1. Topics — The Highest Level
+
+“We organize everything into Topics such as Client Onboarding, Retention, Loyalty, and Support.
+Each Topic contains multiple rules because people describe the same idea in many different ways.”
+
+2. Rules — The Pattern Matching Logic
+
+“Inside a Topic, we have Rules.
+Topic rules help us identify patterns in survey feedback by looking for specific keywords within a defined word range.
+
+A rule can contain:
+
+Plain keywords
+
+Word Groups (macros)
+
+Or a combination of both
+
+Examples include:
+
+account setup
+
+#bacghr_client NEAR onboarding WITHIN 20 words
+
+client AND #bacghr_support
+
+#bacghr_career OR promotion”
+
+3. Word Groups — Our Synonym Buckets
+
+“To keep rules consistent, we use Word Groups — synonym sets like:
+
+#bacghr_client → client, customer, user
+
+#bacghr_onboarding → onboarding, induction, orientation
+
+When a group is updated, every rule using that group improves automatically.”
+
+4. How It Looks in the UI
+Left Panel — Rules List
+
+“On the left, we display all 4,000+ rules.
+Each rule shows:
+
+This Rule Only — exclusive matches
+
+All Matches — total matches including overlaps”
+
+Right Panel — Response Preview
+
+“When we select a rule, the right panel shows real survey responses:
+
+Highlighted matching words or synonyms
+
+Multiple examples for context
+
+A validation question: ‘Should this be captured?’ – Yes / No
+
+This helps us refine rule accuracy before using it across the full dataset.”
+
+Closing
+
+“In summary, using Topics → Rules → Word Groups, we’ve built a scalable framework in Elasticsearch to interpret over a million 2024 survey responses.
+The UI allows fast validation and ensures consistency and accuracy across all themes.
+
+Happy to take questions.”
