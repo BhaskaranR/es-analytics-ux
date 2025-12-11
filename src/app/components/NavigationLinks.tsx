@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const NAVIGATION_LINKS = [
-    { href: '/', label: 'Home' },
-    { href: '/examples', label: 'New Comment' },
+    { href: '/', label: 'Elasticsearch' },
+    { href: '/examples', label: 'ES New Comment' },
+    { href: '/oracle-analytics', label: 'Oracle Analytics' },
+    { href: '/oracle-analytics/new-comment', label: 'Oracle New Comment' },
     { href: '/rules-builder', label: 'Rules Builder' },
     { href: '/reverse-percolator', label: 'Reverse Percolator' }
 ];

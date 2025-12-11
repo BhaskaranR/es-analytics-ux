@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 
 import { callElasticsearch } from '@/lib/elasticsearch';
+import { Badge } from '@/registry/new-york-v4/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/registry/new-york-v4/ui/card';
+import { Separator } from '@/registry/new-york-v4/ui/separator';
 
 import { toast } from 'sonner';
 
@@ -205,15 +208,65 @@ export default function TextAnalyticsInputPage() {
             </form>
             {matchedRules.length > 0 && (
                 <div className='mt-6'>
-                    <h3 className='mb-2 font-semibold'>Matched Rules:</h3>
-                    <ul className='ml-6 list-disc'>
-                        {matchedRules.map((rule) => (
-                            <li key={rule._id}>
-                                <span className='font-mono text-sm'>{rule._id}</span> -{' '}
-                                <span>{rule._source?.topic || 'No topic'}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    <h3 className='mb-4 text-lg font-semibold'>Matched Rules ({matchedRules.length}):</h3>
+                    <div className='space-y-4'>
+                        {matchedRules.map((rule) => {
+                            const topic = rule._source?.topic || 'No topic';
+                            const description = rule._source?.description || 'No description';
+                            const highlightedFragments = rule.highlight?.comment_text || [];
+                            const ruleId = rule._id;
+                            const score = rule._score || 0;
+
+                            return (
+                                <Card key={rule._id} className='w-full'>
+                                    <CardHeader>
+                                        <div className='flex items-start justify-between'>
+                                            <div className='flex-1'>
+                                                <div className='mb-2 flex items-center gap-2'>
+                                                    <Badge variant='secondary' className='font-semibold'>
+                                                        {topic}
+                                                    </Badge>
+                                                    <Badge variant='outline' className='font-mono text-xs'>
+                                                        Score: {score.toFixed(2)}
+                                                    </Badge>
+                                                </div>
+                                                <CardTitle className='text-base font-medium'>
+                                                    Rule: <span className='font-mono text-sm'>{ruleId}</span>
+                                                </CardTitle>
+                                                {description && (
+                                                    <CardDescription className='mt-1'>{description}</CardDescription>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Separator className='mb-3' />
+                                        <div>
+                                            <p className='mb-2 text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                                Highlighted Match
+                                                {highlightedFragments.length > 1 ? 'es' : ''}:
+                                            </p>
+                                            {highlightedFragments.length > 0 ? (
+                                                <div className='space-y-2'>
+                                                    {highlightedFragments.map((fragment, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className='rounded-md bg-gray-50 p-3 text-sm dark:bg-gray-800 [&_mark]:rounded [&_mark]:bg-yellow-200 [&_mark]:px-1 [&_mark]:font-semibold dark:[&_mark]:bg-yellow-900'>
+                                                            <div dangerouslySetInnerHTML={{ __html: fragment }} />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className='rounded-md bg-gray-50 p-3 text-sm text-gray-500 italic dark:bg-gray-800 dark:text-gray-400'>
+                                                    {comment}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
                 </div>
             )}
             {results.length > 0 && (

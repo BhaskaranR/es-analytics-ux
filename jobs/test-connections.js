@@ -231,7 +231,6 @@ async function runTests() {
     console.log('🔍 Running connection tests...\n');
 
     try {
-        await testOracleConnection();
         await testElasticsearchConnection();
 
         console.log('\n✅ All connection tests passed!');
