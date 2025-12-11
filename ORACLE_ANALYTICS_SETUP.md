@@ -7,25 +7,29 @@ The Oracle Analytics implementation has several issues that need to be addressed
 ### 1. **Table Names & Column Names**
 
 The API currently assumes:
+
 - Table: `COMMENT_RULES` with columns: `RULE_ID`, `TOPIC`, `DESCRIPTION`, `QUERY_TEXT`
 - Table: `MATCHED_COMMENTS` with standard columns
 
 **But your actual Oracle schema likely uses:**
+
 - `rb_comment_rules` (or similar) with `rule_expr_raw` column
 - Column names may be in different case (Oracle is case-sensitive for quoted identifiers)
 
 ### 2. **Oracle Text CONTAINS Query Issue**
 
 The current `matchRules` operation has a fundamental problem: Oracle Text `CONTAINS` requires:
+
 - An **indexed column** (with CONTEXT index) on the left side
 - A **search expression** on the right side
 
 For percolation-style matching (testing one comment against many rules), you need one of these approaches:
 
 #### **Option A: Use Existing Comment Table** (Recommended if you have one)
+
 ```sql
 -- If you have a SURVEY_COMMENTS or similar table with indexed comment_text
-SELECT 
+SELECT
     r.RULE_ID,
     r.TOPIC,
     r.DESCRIPTION,
@@ -34,12 +38,13 @@ SELECT
 FROM COMMENT_RULES r
 JOIN (SELECT 999999 as id, :comment_text as comment_text FROM DUAL) c
     ON CONTAINS(c.comment_text, rb_expand_macros(r.RULE_EXPR_RAW), 1) > 0
-WHERE (r.EXCLUDE_EXPR_RAW IS NULL 
+WHERE (r.EXCLUDE_EXPR_RAW IS NULL
     OR CONTAINS(c.comment_text, rb_expand_macros(r.EXCLUDE_EXPR_RAW), 2) = 0)
 ORDER BY SCORE(1) DESC
 ```
 
 #### **Option B: Temporary Table Approach**
+
 1. Create a temp table
 2. Insert the comment
 3. Create CONTEXT index
@@ -47,6 +52,7 @@ ORDER BY SCORE(1) DESC
 5. Drop temp table
 
 #### **Option C: Application-Side Matching** (Simpler but less efficient)
+
 - Fetch all rules
 - Test each rule expression against comment in Node.js
 - Return matches
@@ -54,6 +60,7 @@ ORDER BY SCORE(1) DESC
 ### 3. **Required Oracle Setup**
 
 You need:
+
 1. **Oracle Text** installed and configured
 2. **CONTEXT indexes** on comment columns
 3. **Macro expansion function** (`rb_expand_macros`) if using word groups
@@ -98,6 +105,7 @@ ORACLE_SID=XE
 ### Step 5: Verify Oracle Text Setup
 
 Check if you have:
+
 - CONTEXT indexes created
 - Macro expansion functions
 - Proper table permissions
@@ -106,19 +114,19 @@ Check if you have:
 
 ```sql
 -- If you have a comments table with CONTEXT index
-SELECT 
+SELECT
     r.id AS RULE_ID,
     r.topic AS TOPIC,
     r.description AS DESCRIPTION,
     SCORE(1) AS SCORE,
-    CTX_DOC.SNIPPET('comment_text_idx', c.id, 
+    CTX_DOC.SNIPPET('comment_text_idx', c.id,
         rb_expand_macros(r.rule_expr_raw)) AS HIGHLIGHTED_TEXT
 FROM rb_comment_rules r
 CROSS JOIN (
     SELECT 1 AS id, :comment_text AS comment_text FROM DUAL
 ) c
 WHERE CONTAINS(c.comment_text, rb_expand_macros(r.rule_expr_raw), 1) > 0
-  AND (r.exclude_expr_raw IS NULL 
+  AND (r.exclude_expr_raw IS NULL
     OR CONTAINS(c.comment_text, rb_expand_macros(r.exclude_expr_raw), 2) = 0)
 ORDER BY SCORE(1) DESC
 ```
@@ -132,7 +140,7 @@ case 'matchRules': {
     const { comment_text } = params;
     // Simple LIKE-based matching for testing (replace with Oracle Text later)
     result = await connection.execute(
-        `SELECT 
+        `SELECT
             RULE_ID,
             TOPIC,
             DESCRIPTION,
@@ -162,19 +170,21 @@ case 'matchRules': {
 ## 🐛 Common Issues
 
 1. **"ORA-00942: table or view does not exist"**
-   - Fix: Update table names in queries to match your schema
+
+    - Fix: Update table names in queries to match your schema
 
 2. **"ORA-20000: Oracle Text error"**
-   - Fix: Ensure CONTEXT indexes are created and Oracle Text is properly set up
+
+    - Fix: Ensure CONTEXT indexes are created and Oracle Text is properly set up
 
 3. **"ORA-00904: invalid identifier"**
-   - Fix: Check column names match your actual schema (case-sensitive if quoted)
+
+    - Fix: Check column names match your actual schema (case-sensitive if quoted)
 
 4. **Connection pool errors**
-   - Fix: Verify Oracle credentials and connection string
+    - Fix: Verify Oracle credentials and connection string
 
 ## 📚 Resources
 
-- Oracle Text Documentation: https://docs.oracle.com/en/database/oracle/oracle-database/19/ccref/introduction-to-oracle-text.html
-- oracledb Node.js Driver: https://oracle.github.io/node-oracledb/
-
+- Oracle Text Documentation: <https://docs.oracle.com/en/database/oracle/oracle-database/19/ccref/introduction-to-oracle-text.html>
+- oracledb Node.js Driver: <https://oracle.github.io/node-oracledb/>
