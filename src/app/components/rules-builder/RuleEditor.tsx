@@ -10,13 +10,13 @@ import { Ban, ChevronDown, ChevronRight, CircleCheck, Code2, Lightbulb, Triangle
 
 import { DEFAULT_DIST, astToQuery, collectGroups, english, evalComment, parse, tokenize } from './engine';
 import { SEED_TEST } from './seed';
-import type { Ast, Status, WordGroup } from './types';
+import SlateMatchEditor, { type SlateMatchEditorHandle } from './SlateMatchEditor';
+import type { Ast, Status } from './types';
 import { StatusIcon, field, opBtn } from './ui';
 import type { RB } from './useStore';
 
 export function RuleEditor({ rb }: { rb: RB }) {
-    const matchRef = useRef<HTMLInputElement>(null);
-    const [ac, setAc] = useState<{ open: boolean; items: WordGroup[]; index: number; from: number }>({ open: false, items: [], index: 0, from: 0 });
+    const editorRef = useRef<SlateMatchEditorHandle>(null);
     const [exInput, setExInput] = useState('');
     const [exIndex, setExIndex] = useState(0);
     const [exFocus, setExFocus] = useState(false);
@@ -62,43 +62,8 @@ export function RuleEditor({ rb }: { rb: RB }) {
             })
         );
     };
-    const insert = (token: string, caretBack = 0) => {
-        const el = matchRef.current;
-        const s = el?.selectionStart ?? match.length;
-        const e = el?.selectionEnd ?? match.length;
-        setMatch(match.slice(0, s) + token + match.slice(e));
-        requestAnimationFrame(() => {
-            el?.focus();
-            const pos = s + token.length - caretBack;
-            el?.setSelectionRange(pos, pos);
-        });
-    };
-
-    // # autocomplete in the match input
-    const updateAcFrom = (value: string, caret: number) => {
-        const m = value.slice(0, caret).match(/#([A-Za-z0-9_]*)$/);
-        if (!m) {
-            setAc((a) => (a.open ? { ...a, open: false } : a));
-
-            return;
-        }
-        const frag = m[1].toLowerCase();
-        const items = groups.filter((g) => g.name.toLowerCase().includes(frag)).slice(0, 8);
-        setAc({ open: items.length > 0, items, index: 0, from: caret - m[0].length });
-    };
-    const updateAcCaret = () => {
-        const el = matchRef.current;
-        if (el) updateAcFrom(el.value, el.selectionStart ?? el.value.length);
-    };
-    const acceptAc = (g: WordGroup) => {
-        const el = matchRef.current;
-        const caret = el?.selectionStart ?? match.length;
-        const text = `#${g.name} `;
-        setMatch(match.slice(0, ac.from) + text + match.slice(caret));
-        setAc((a) => ({ ...a, open: false }));
-        const pos = ac.from + text.length;
-        requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(pos, pos); });
-    };
+    // pills / steppers insert at the Slate caret; # autocomplete lives inside the editor
+    const insert = (token: string, caretBack = 0) => editorRef.current?.insert(token, caretBack);
 
     const addExclude = (t: string) => {
         const v = t.trim().replace(/,$/, '');
@@ -129,34 +94,10 @@ export function RuleEditor({ rb }: { rb: RB }) {
                     <button className={opBtn} onClick={() => insert('""', 1)}>&quot; &quot;</button>
                     <button className={`${opBtn} text-amber-600 dark:text-amber-400`} onClick={() => insert('*')} title='wildcard: manage* matches manager, managing'>*</button>
                     <button className={`${opBtn} text-amber-600 dark:text-amber-400`} onClick={() => insert('~')} title='fuzzy: word~ or ?word — tolerates typos'>~</button>
-                    <button className={`${opBtn} border-primary/40 text-blue-600 dark:text-blue-400`} onClick={() => { insert('#'); requestAnimationFrame(updateAcCaret); }}># group</button>
+                    <button className={`${opBtn} border-primary/40 text-blue-600 dark:text-blue-400`} onClick={() => insert('#')}># group</button>
                 </div>
-                <div className='relative mt-1.5'>
-                    <input
-                        ref={matchRef}
-                        className={`${field} font-mono`}
-                        value={match}
-                        onChange={(e) => { setMatch(e.target.value); updateAcFrom(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
-                        onClick={updateAcCaret}
-                        onBlur={() => setTimeout(() => setAc((a) => ({ ...a, open: false })), 120)}
-                        onKeyDown={(e) => {
-                            if (!ac.open) return;
-                            if (e.key === 'ArrowDown') { e.preventDefault(); setAc((a) => ({ ...a, index: Math.min(a.items.length - 1, a.index + 1) })); }
-                            else if (e.key === 'ArrowUp') { e.preventDefault(); setAc((a) => ({ ...a, index: Math.max(0, a.index - 1) })); }
-                            else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); acceptAc(ac.items[ac.index]); }
-                            else if (e.key === 'Escape') { e.preventDefault(); setAc((a) => ({ ...a, open: false })); }
-                        }}
-                    />
-                    {ac.open && (
-                        <div className='absolute left-0 top-full z-30 mt-1 max-h-56 w-72 overflow-auto rounded-md border bg-background p-1 shadow-md'>
-                            {ac.items.map((g, idx) => (
-                                <button key={g.id} onMouseDown={(e) => { e.preventDefault(); acceptAc(g); }} className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm ${idx === ac.index ? 'bg-accent' : 'hover:bg-accent'}`}>
-                                    <span className='font-mono text-blue-600 dark:text-blue-400'>#{g.name}</span>
-                                    <span className='ml-auto text-[11px] text-muted-foreground'>{g.terms.length} terms</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                <div className='mt-1.5'>
+                    <SlateMatchEditor ref={editorRef} value={match} groups={groups} onChange={setMatch} />
                 </div>
 
                 {/* validation */}
