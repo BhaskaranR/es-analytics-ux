@@ -1,0 +1,37 @@
+{
+    "name": "rules-builder",
+    "version": "0.1.0",
+    "description": "Text-analytics rules builder — single-file React component (Slate match editor + DSL engine).",
+    "private": false,
+    "sideEffects": false,
+    "license": "MIT",
+    "keywords": [
+        "rules-builder",
+        "text-analytics",
+        "slate",
+        "react",
+        "query-dsl"
+    ],
+    "files": [
+        "RulesBuilderCombined.tsx",
+        "README.md"
+    ],
+    "main": "./RulesBuilderCombined.tsx",
+    "module": "./RulesBuilderCombined.tsx",
+    "types": "./RulesBuilderCombined.tsx",
+    "exports": {
+        ".": "./RulesBuilderCombined.tsx"
+    },
+    "peerDependencies": {
+        "lucide-react": ">=0.400.0",
+        "react": ">=18",
+        "react-dom": ">=18",
+        "slate": ">=0.124.0",
+        "slate-dom": ">=0.119.0",
+        "slate-history": ">=0.113.0",
+        "slate-react": ">=0.124.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

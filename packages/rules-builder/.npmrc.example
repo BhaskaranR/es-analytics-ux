@@ -1,0 +1,10 @@
+# Copy to .npmrc and fill in your Artifactory details.
+# Scope the @internal namespace to your Artifactory npm repo:
+@internal:registry=https://<YOUR-ARTIFACTORY-HOST>/artifactory/api/npm/<YOUR-NPM-REPO>/
+
+# Auth — get this line from Artifactory UI: "Set Me Up" → npm → it generates the
+# _auth / _authToken for you. Example shapes (use whichever Artifactory gives you):
+//<YOUR-ARTIFACTORY-HOST>/artifactory/api/npm/<YOUR-NPM-REPO>/:_authToken=<TOKEN>
+# or basic-auth form:
+# //<YOUR-ARTIFACTORY-HOST>/artifactory/api/npm/<YOUR-NPM-REPO>/:_auth=<BASE64_USER:APIKEY>
+# //<YOUR-ARTIFACTORY-HOST>/artifactory/api/npm/<YOUR-NPM-REPO>/:always-auth=true
